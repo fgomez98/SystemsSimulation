@@ -1,0 +1,50 @@
+.idea/*
+.github
+.github/*
+
+*.iml
+*.ipr
+*.iws
+
+
+### Maven ###
+target/
+
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+*/application.properties
+application.properties
+
+### OSX ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+build
+build/*
+node_modules
+yarn.lock
+package-lock.json
+settings.js
+settings-*
+
+
+#api keys
+.env
+
+#archivos
+off-latice-dinamic.txt
+off-latice-static.txt
+off-latice-static.csv
+off-latice-static.csv
+dinamic.csv
+static.csv
