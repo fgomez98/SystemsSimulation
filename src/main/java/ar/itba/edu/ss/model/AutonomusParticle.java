@@ -125,11 +125,23 @@ public class AutonomusParticle extends Particle {
 
     @Override
     public StringBuilder staticData() {
-        return super.staticData();
+        return new StringBuilder(Long.toString(getId()));
     }
 
     @Override
     public StringBuilder dinamicData() {
-        return super.dinamicData().append(" ").append(this.getXVelocity()).append(" ").append(this.getYVelocity()).append(" ").append(this.getAngle());
+        return super.dinamicData().append(" ").append(this.getXVelocity()).append(" ").append(this.getYVelocity());
+    }
+
+    public static Particle from(long id, String[] staticData, String[] dinamicData) {
+        double vx = Double.parseDouble(dinamicData[2]);
+        double vy = Double.parseDouble(dinamicData[3]);
+        double angle = Math.atan2(vx, vy);
+        return new AutonomusParticle(id, Double.parseDouble(dinamicData[0]), Double.parseDouble(dinamicData[1]), Double.parseDouble(staticData[0]), angle, Double.parseDouble(dinamicData[4]));
+    }
+
+    @Override
+    public String toString() {
+        return staticData().append(" ").append(dinamicData()).append(" ").append(angle).append("\n").toString();
     }
 }

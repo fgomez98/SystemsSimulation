@@ -7,9 +7,9 @@ import org.kohsuke.args4j.Option;
 import java.io.*;
 import java.util.*;
 
-import static ar.itba.edu.ss.utils.CSVUtils.CSVWriteParticles;
-import static ar.itba.edu.ss.utils.CSVUtils.STATIC_FILENAME;
-import static ar.itba.edu.ss.utils.CSVUtils.DINAMIC_FILENAME;
+import static ar.itba.edu.ss.utils.IOUtils.CSVWriteParticles;
+import static ar.itba.edu.ss.utils.IOUtils.STATIC_FILENAME;
+import static ar.itba.edu.ss.utils.IOUtils.DINAMIC_FILENAME;
 
 public class Generate {
 

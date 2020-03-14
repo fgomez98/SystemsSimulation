@@ -2,16 +2,14 @@ package ar.itba.edu.ss;
 
 import ar.itba.edu.ss.model.Particle;
 import ar.itba.edu.ss.systems.CellIndexMethod;
-import ar.itba.edu.ss.utils.CSVUtils;
+import ar.itba.edu.ss.utils.IOUtils;
 import ar.itba.edu.ss.utils.CmdParserUtils;
 import org.kohsuke.args4j.Option;
 
 import java.io.*;
 import java.util.*;
 
-import static ar.itba.edu.ss.utils.CSVUtils.STATIC_FILENAME;
-import static ar.itba.edu.ss.utils.CSVUtils.DINAMIC_FILENAME;
-import static ar.itba.edu.ss.utils.CSVUtils.NEAR_BY_FILENAME;
+import static ar.itba.edu.ss.utils.IOUtils.*;
 
 public class ComputeNeighbors {
 
@@ -99,7 +97,7 @@ public class ComputeNeighbors {
     public void compute() {
         List<Particle> data = null;
         try {
-            data = CSVUtils.CSVReadParticles(staticInputFilename, dinamicInputFilename);
+            data = IOUtils.CSVReadParticles(staticInputFilename, dinamicInputFilename);
         } catch (Exception e) {
             System.err.println("An error has been encountered while reading input file");
             System.exit(1);
@@ -111,7 +109,7 @@ public class ComputeNeighbors {
 
         Scanner params = null;
         try {
-            params = new Scanner(new File(STATIC_FILENAME));
+            params = new Scanner(new File(staticInputFilename));
         } catch (FileNotFoundException e) {
             System.err.println("An error has been encountered while reading input file");
             System.exit(1);
@@ -149,7 +147,7 @@ public class ComputeNeighbors {
         System.out.print(Double.toString((double) elapsedTime / 1000));
 
         try {
-            CSVUtils.CSVWrite(NEAR_BY_FILENAME, nearbyParticlesMap.entrySet(), "", e -> "[" + e.getKey().getId() + " " + e.getValue().stream().reduce("", (s, particle) -> s + " " + particle.getId(), String::concat) + "]\n", false);
+            IOUtils.CSVWrite(NEAR_BY_FILENAME, nearbyParticlesMap.entrySet(), "", e -> "[" + e.getKey().getId() + " " + e.getValue().stream().reduce("", (s, particle) -> s + " " + particle.getId(), String::concat) + "]\n", false);
         } catch (IOException e) {
             System.err.println("An error has been encountered while writing output file");
             System.exit(1);

@@ -1,28 +1,18 @@
 package ar.itba.edu.ss;
 
-import ar.itba.edu.ss.model.AutonomusParticle;
-import ar.itba.edu.ss.model.Particle;
 import ar.itba.edu.ss.systems.OffLattice;
-import ar.itba.edu.ss.utils.CSVUtils;
 import ar.itba.edu.ss.utils.CmdParserUtils;
 import org.kohsuke.args4j.Option;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
-import java.util.Scanner;
-
-import static ar.itba.edu.ss.utils.CSVUtils.DINAMIC_FILENAME;
-import static ar.itba.edu.ss.utils.CSVUtils.STATIC_FILENAME;
 
 public class CellularAutomata {
 
     @Option(name = "-Dsinput", usage = "Filename del input", forbids = {"-Dn"})
-    private String staticInputFilename = "./" + STATIC_FILENAME;
+    private String staticInputFilename;
 
     @Option(name = "-Ddinput", usage = "Filename del input", forbids = {"-Dn"})
-    private String dinamicInputFilename = "./" + DINAMIC_FILENAME;
+    private String dinamicInputFilename;
 
     @Option(name = "-Dl", usage = "Longitud del lado del área cuadrada de simulación", forbids = {"-Ddinput", "Dsinput"})
     private double l;
@@ -30,7 +20,7 @@ public class CellularAutomata {
     @Option(name = "-Dn", usage = "Numero de particulas", forbids = {"-Ddinput", "Dsinput"})
     private int n;
 
-    @Option(name = "-Dn", usage = "Amplitud del ruido", required = true)
+    @Option(name = "-Dr", usage = "Amplitud del ruido", required = true)
     private double appNoise;
 
     @Option(name = "-Dt", usage = "Tiempo a simular", required = true)
@@ -131,7 +121,10 @@ public class CellularAutomata {
         } else {
              offLattice = new OffLattice(n, l, appNoise);
         }
-
+        System.out.println("Starting simulation...");
+        long startTime = System.currentTimeMillis();
         offLattice.simulate(time);
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        System.out.println("Time elapsed: " + ((double) elapsedTime / 1000));
     }
 }

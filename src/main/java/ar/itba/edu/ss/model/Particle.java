@@ -92,7 +92,7 @@ public class Particle {
     }
 
     public boolean inBound(double lBound) {
-        return x + radius <= lBound && x - radius >= 0 && y + radius <= lBound && y - radius >= 0;
+        return x + radius < lBound && x - radius > 0 && y + radius < lBound && y - radius > 0;
     }
 
     public static Particle create(double lBound, double rBound) {
@@ -104,6 +104,7 @@ public class Particle {
         int i = 0, attempts = 0;
         while (i != size) {
             Particle randomParticle = Particle.create(lBound, rBound);
+            randomParticle.id = i;
             if (randomParticle.inBound(lBound)) {
                 boolean valid = particles.stream().noneMatch(particle -> particle.interacts(randomParticle));
                 if (valid) {
@@ -144,6 +145,10 @@ public class Particle {
         return result;
     }
 
+    public static Particle from(long id, String[] staticData, String[] dinamicData) {
+        return new Particle(id, Double.parseDouble(dinamicData[0]), Double.parseDouble(dinamicData[1]), Double.parseDouble(staticData[0]));
+    }
+
     /*
         Devolvemos  stringBuilder por si se quiere agregar mas data estatica asi optimizar
     */
@@ -156,5 +161,10 @@ public class Particle {
      */
     public StringBuilder dinamicData() {
         return (new StringBuilder()).append(x).append(" ").append(y);
+    }
+
+    @Override
+    public String toString() {
+        return staticData().append(" ").append(dinamicData()).append("\n").toString();
     }
 }

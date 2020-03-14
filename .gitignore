@@ -42,9 +42,13 @@ settings-*
 .env
 
 #archivos
-off-latice-dinamic.txt
-off-latice-static.txt
-off-latice-static.csv
-off-latice-static.csv
 dinamic.csv
 static.csv
+nearby.csv
+off-latice-dinamic.csv
+off-latice-simulation.xyz
+off-latice-static.csv
+off-latice-va-*.txt
+nearby.csv
+
+Simulation Frames/*

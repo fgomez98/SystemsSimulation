@@ -165,7 +165,7 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>build-b</id>
+                        <id>build-c</id>
                         <configuration>
                             <archive>
                                 <manifest>

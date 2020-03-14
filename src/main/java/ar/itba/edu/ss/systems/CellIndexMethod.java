@@ -22,9 +22,6 @@ public class CellIndexMethod {
         this.radio_interaccion = radio_interaccion;
         this.contorno = contorno;
         this.matrix = new Cell[M * M];
-        for (int i = 0; i < M * M; i++) {
-            this.matrix[i] = new Cell();
-        }
     }
 
     public List<? extends Particle> getParticles() {
@@ -33,6 +30,9 @@ public class CellIndexMethod {
 
     public void populate(List<? extends Particle> particles) {
         this.particles = particles;
+        for (int i = 0; i < M * M; i++) {
+            this.matrix[i] = new Cell();
+        }
         int i, j;
         for (Particle particle : particles) {
             i = (int) Math.floor(particle.getX() * M / L);

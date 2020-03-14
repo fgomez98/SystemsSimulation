@@ -1,16 +1,14 @@
 package ar.itba.edu.ss.systems;
 
-import ar.itba.edu.ss.utils.CSVUtils;
+import ar.itba.edu.ss.utils.IOUtils;
 import ar.itba.edu.ss.model.AutonomusParticle;
 import ar.itba.edu.ss.model.Particle;
 import ar.itba.edu.ss.utils.Rand;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static ar.itba.edu.ss.utils.CSVUtils.*;
+import static ar.itba.edu.ss.utils.IOUtils.*;
 
 public class OffLattice {
 
@@ -29,12 +27,12 @@ public class OffLattice {
         this.appNoise = appNoise;
         this.L = l;
         this.M = (int) Math.ceil(l / 1); // utilizamos el M optimo
-        try {
-            CSVUtils.CSVWriteParticles(particles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, particles.size(), l);
-        } catch (IOException e) {
-            System.err.println("An error has been encountered while writing output file");
-            System.exit(1);
-        }
+//        try {
+//            IOUtils.CSVWriteParticles(particles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, particles.size(), l);
+//        } catch (IOException e) {
+//            System.err.println("An error has been encountered while writing output file");
+//            System.exit(1);
+//        }
     }
 
     public OffLattice(int n, double l, double appNoise) {
@@ -44,17 +42,20 @@ public class OffLattice {
         this.L = l;
         this.M = (int) Math.ceil(l / 1); // utilizamos el M optimo
         this.particles = AutonomusParticle.generate(n, l, 0, 2 * Math.PI, 0.03);
-        try {
-            CSVUtils.CSVWriteParticles(this.particles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, this.particles.size(), l);
-        } catch (IOException e) {
-            System.err.println("An error has been encountered while writing output file");
-            System.exit(1);
-        }
+//        try {
+//            IOUtils.CSVWriteParticles(this.particles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, this.particles.size(), l);
+//        } catch (IOException e) {
+//            System.err.println("An error has been encountered while writing output file");
+//            System.exit(1);
+//        }
     }
 
-    @SuppressWarnings("unchecked") // casteo de Particle a AutonomusParticle
     public void simulate(int time) {
-        CellIndexMethod cim = new CellIndexMethod(M, L, N, 1, false);
+        Map<Particle, Double> nextAngles = new HashMap<>(); // evitar boxing y autoboxing
+        CellIndexMethod cim = new CellIndexMethod(M, L, N, 1,true);
+        List<Double> velocityAverages = new LinkedList<>();
+
+        outputParticles(particles, 0, false);
 
         // cada segundo (intervalo de tiempo) el automata evoluciona a un estado nuevo
         for (int i = 1; i < time + 1; i++) {
@@ -66,55 +67,78 @@ public class OffLattice {
             double accVx = 0.0;
             double accVy = 0.0;
 
-            for (AutonomusParticle particle : (List<AutonomusParticle>) cim.getParticles()) {
-                updateParticle(particle, nearby.get(particle));
+            for (AutonomusParticle particle : particles) {
+                nextAngles.put(particle, calculateNextAngle(particle, nearby.get(particle)));
+            }
+
+            for (AutonomusParticle particle : particles) {
+                updateParticle(particle, nextAngles.get(particle));
                 accVx += particle.getXVelocity();
                 accVy += particle.getYVelocity();
             }
 
-            double modSum = Math.sqrt(Math.pow(accVx, 2) + Math.pow(accVy, 2)); // sqrt((vx0 + vx1 + ...)^2 + (vy0 + vy1 + ...)^2) = |sumatoria,i..N (Vi)|
-            double velocityAverage = modSum / (N * 0.03); // 0.03 = velocidad
+            double modSum = Math.sqrt(Math.pow(accVx, 2) + Math.pow(accVy, 2)); // sqrt((vx0 + vx1 + ...)^2 + (vy0 + vy1 + ...)^2) = | sumatoria,i..N (Vi)|
+            double va = modSum / (particles.size() * 0.03);
 
-            /*
-            TODO: VA nose bien que onda como es esto
-             */
-//          System.out.println(velocityAverage);
+            velocityAverages.add(va);
 
-            outputParticles(particles, i);
+            outputParticles(particles, i, true);
         }
-    }
 
-    private void outputParticles(List<AutonomusParticle> autonomusParticles, int timeInterval) {
         try {
-            CSVUtils.CSVWrite(OFF_LATICE_DINAMIC_FILENAME, autonomusParticles, "\n" + Integer.toString(timeInterval) + "\n\n", particle -> particle.dinamicData().append("\n").toString(), true);
+            CSVWrite("off-latice-va-"+ N + "-" + appNoise + ".txt", velocityAverages, "", aDouble -> Double.toString(aDouble) + "\n", false);
         } catch (IOException e) {
-            System.err.println("An error has been encountered while writing output file");
-            System.exit(1);
+            e.printStackTrace();
         }
+
     }
 
-    private void updateParticle(AutonomusParticle particle, Set<Particle> nearby) {
-    /*
+    private double calculateNextAngle(AutonomusParticle particle, Set<Particle> neighbours) {
+         /*
                 el automata define como evolucionan las particulas en cada instante
                 X(t + 1) = X(t) + V(t) * ∆t
                 O(t + 1) = ⟨θ(t)⟩r + ∆θ es el promedio de los ángulos de todas las particulas dentro de rinteraccion incluyendo a la propia particula
                 arctg[⟨sin(θ(t))⟩r/⟨cos(θ(t))⟩r]
                 Δθ es un ruido uniforme entre [-η/2, η/2].
-    */
-        double sinSum = nearby.stream().reduce(Math.sin(particle.getRadius()), (aDouble, particle1) -> aDouble + Math.sin(((AutonomusParticle) particle1).getAngle()), Double::sum);
-        double cosSum = nearby.stream().reduce(Math.cos(particle.getRadius()), (aDouble, particle1) -> aDouble + Math.cos(((AutonomusParticle) particle1).getAngle()), Double::sum);
-        double n = nearby.size() + 1;
+        */
+        double cosSum = neighbours.stream().reduce(Math.cos(particle.getAngle()), (aDouble, particle1) -> aDouble + Math.cos(((AutonomusParticle) particle1).getAngle()), Double::sum);
+        double sinSum = neighbours.stream().reduce(Math.sin(particle.getAngle()), (aDouble, particle1) -> aDouble + Math.sin(((AutonomusParticle) particle1).getAngle()), Double::sum);
+        double n = neighbours.size() + 1;
         double randomNoise = (Rand.getInstance().nextDouble() * appNoise) - (appNoise / 2); // uniforme(min, max) = random.nextInt(max - min) + min;
-        particle.setAngle(Math.atan2(sinSum / n, cosSum / n) + randomNoise);
-        particle.move(1);
-        particle.move(1);
-        double x = particle.getX() + Math.cos(particle.getAngle()) * particle.getVelocity();
-        double y = particle.getX() + Math.sin(particle.getAngle()) * particle.getVelocity();
+        return Math.atan2(sinSum / n, cosSum / n) + randomNoise;
+    }
+
+    private void updateParticle(AutonomusParticle particle, Double nextAngle) {
+        particle.setAngle(nextAngle);
+        double x = particle.getX() + particle.getXVelocity();
+        double y = particle.getY() + particle.getYVelocity();
         /*
             Bordes periodicos
          */
-        particle.setX(x % L);
-        particle.setY(y % L);
+        particle.setX(floorMod(x, L));
+        particle.setY(floorMod(y, L));
+    }
+
+    /*
+        Igual que Math.floorMod pero para valores de tipo double
+     */
+    private double floorMod(double n, double m) {
+        while (n >= m) {
+            n -= m;
+        }
+        while (n <= 0) {
+            n += m;
+        }
+        return n;
+    }
+
+    private void outputParticles(List<AutonomusParticle> autonomusParticles, int timeInterval, boolean append) {
+        try {
+            IOUtils.CSVWrite(OFF_LATICE_SIMULATION_FILENAME, autonomusParticles, Integer.toString(N) + "\n" + timeInterval + "\n", Particle::toString, append);
+        } catch (IOException e) {
+            System.err.println("An error has been encountered while writing output file");
+            System.exit(1);
+        }
     }
 
     public static void main(String args[]) {
@@ -126,10 +150,10 @@ public class OffLattice {
         System.out.println("Time elapsed: " + (System.currentTimeMillis() - start));
 
          /*
-        Todo: nose si esto viene en un archivo o las tengo que generar yo, por ahora las imprimo y dsp voy apendeando en dinamic
+            nose si esto viene en un archivo o las tengo que generar yo, por ahora las imprimo y dsp voy apendeando en dinamic
          */
         try {
-            CSVUtils.CSVWriteParticles(autonomusParticles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, autonomusParticles.size(), ol.L);
+            IOUtils.CSVWriteParticles(autonomusParticles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, autonomusParticles.size(), ol.L);
         } catch (IOException e) {
             System.err.println("An error has been encountered while writing output file");
             System.exit(1);

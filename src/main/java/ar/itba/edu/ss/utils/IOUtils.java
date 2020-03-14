@@ -14,13 +14,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-public class CSVUtils {
+public class IOUtils {
 
     public static String STATIC_FILENAME = "static.csv";
     public static String DINAMIC_FILENAME = "dinamic.csv";
     public static String NEAR_BY_FILENAME = "nearby.csv";
     public static String OFF_LATICE_STATIC_FILENAME = "off-latice-static.csv";
     public static String OFF_LATICE_DINAMIC_FILENAME = "off-latice-dinamic.csv";
+    public static String OFF_LATICE_SIMULATION_FILENAME = "off-latice-simulation.xyz";
 
     public static List<Particle> CSVReadParticles(String staticPath, String dinamicPath) throws IOException {
         CSVReader staticReader = new CSVReader(new FileReader(staticPath), ' ');
@@ -44,7 +45,7 @@ public class CSVUtils {
 
         staticWriter.write(n + "\n");
         staticWriter.write(l + "\n");
-        dinamicWriter.write(0 + "\n\n");
+        dinamicWriter.write(0 + "\n");
 
         for (Particle particle : particles) {
             staticWriter.write(particle.staticData().append("\n").toString());
@@ -61,13 +62,14 @@ public class CSVUtils {
             for (K row : data) {
                 writer.write(toCsvRow.apply(row));
             }
+            writer.close();
         } catch (IOException e) {
             throw new IOException(e.getMessage());
         }
     }
 
     public static <K> void CSVWrite(String path, Collection<K> data, String headers, Function<K, String> toCsvRow, boolean append) throws IOException {
-        CSVWrite(Paths.get(path), data, headers, toCsvRow, true);
+        CSVWrite(Paths.get(path), data, headers, toCsvRow, append);
     }
 
 }
