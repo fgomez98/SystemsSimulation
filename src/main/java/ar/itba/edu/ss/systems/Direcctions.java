@@ -23,15 +23,15 @@ public class Direcctions {
 
     static Direcctions NEUTRAL = new Direcctions(0, 0);
 
-    static Direcctions UP = new Direcctions(0, -1);
-    static Direcctions DOWN = new Direcctions(0, 1);
-    static Direcctions RIGHT = new Direcctions(1, 0);
-    static Direcctions LEFT = new Direcctions(-1, 0);
+    static Direcctions UP = new Direcctions(-1, 0);
+    static Direcctions DOWN = new Direcctions(1, 0);
+    static Direcctions RIGHT = new Direcctions(0, 1);
+    static Direcctions LEFT = new Direcctions(0, -1);
 
-    static Direcctions UP_RIGHT = new Direcctions(1, -1);
+    static Direcctions UP_RIGHT = new Direcctions(-1, 1);
     static Direcctions DOWN_RIGHT = new Direcctions(1, 1);
     static Direcctions UP_LEFT = new Direcctions(-1, -1);
-    static Direcctions DOWN_LEFT = new Direcctions(-1, 1);
+    static Direcctions DOWN_LEFT = new Direcctions(1, -1);
 
     static List<Direcctions> L_DIRECTIONS = Arrays.asList(UP, UP_RIGHT, RIGHT, DOWN_RIGHT, NEUTRAL);
 }
