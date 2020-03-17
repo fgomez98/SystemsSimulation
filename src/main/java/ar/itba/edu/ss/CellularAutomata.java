@@ -8,12 +8,6 @@ import java.io.IOException;
 
 public class CellularAutomata {
 
-    @Option(name = "-Dsinput", usage = "Filename del input", forbids = {"-Dn"})
-    private String staticInputFilename;
-
-    @Option(name = "-Ddinput", usage = "Filename del input", forbids = {"-Dn"})
-    private String dinamicInputFilename;
-
     @Option(name = "-Dl", usage = "Longitud del lado del área cuadrada de simulación", forbids = {"-Ddinput", "Dsinput"})
     private double l;
 
@@ -27,22 +21,6 @@ public class CellularAutomata {
     private int time;
 
     public CellularAutomata() {
-    }
-
-    public String getStaticInputFilename() {
-        return staticInputFilename;
-    }
-
-    public void setStaticInputFilename(String staticInputFilename) {
-        this.staticInputFilename = staticInputFilename;
-    }
-
-    public String getDinamicInputFilename() {
-        return dinamicInputFilename;
-    }
-
-    public void setDinamicInputFilename(String dinamicInputFilename) {
-        this.dinamicInputFilename = dinamicInputFilename;
     }
 
     public double getL() {
@@ -90,41 +68,16 @@ public class CellularAutomata {
     }
 
     public void start() {
-        OffLattice offLattice = null;
+        OffLattice offLattice = new OffLattice(n, l, appNoise);
 
-        if (staticInputFilename != null && dinamicInputFilename != null) {
-//            TODO: read de particulas autonomas (hacer le metodo read generico para ambas)
-//            List<AutonomusParticle> data = null;
-//            try {
-//                data = CSVUtils.CSVReadParticles(staticInputFilename, dinamicInputFilename);
-//            } catch (Exception e) {
-//                System.err.println("An error has been encountered while reading input file");
-//                System.exit(1);
-//            }
-//
-//        /*
-//            Necesitamos conocer el N y L pasado en el archivo estatico
-//         */
-//
-//            Scanner params = null;
-//            try {
-//                params = new Scanner(new File(STATIC_FILENAME));
-//            } catch (FileNotFoundException e) {
-//                System.err.println("An error has been encountered while reading input file");
-//                System.exit(1);
-//            }
-//
-//            int n = params.nextInt(); // leemos el N pasado por el archivo estatico
-//            double l = params.nextDouble(); // leemos el L pasado por el archivo estatico
-//
-//             offLattice = new OffLattice(data, l, n, appNoise);
-        } else {
-             offLattice = new OffLattice(n, l, appNoise);
-        }
         System.out.println("Starting simulation...");
+
         long startTime = System.currentTimeMillis();
+
         offLattice.simulate(time);
+
         long elapsedTime = System.currentTimeMillis() - startTime;
+
         System.out.println("Time elapsed: " + ((double) elapsedTime / 1000));
     }
 }

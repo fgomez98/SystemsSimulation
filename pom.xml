@@ -126,44 +126,44 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>build-a</id>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>ar.itba.edu.ss.Generate</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <!-- <appendAssemblyId>false</appendAssemblyId> -->
-                            <finalName>Generate</finalName>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>build-b</id>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>ar.itba.edu.ss.ComputeNeighbors</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <!-- <appendAssemblyId>false</appendAssemblyId> -->
-                            <finalName>Compute</finalName>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
+                    <!--<execution>-->
+                        <!--<id>build-a</id>-->
+                        <!--<configuration>-->
+                            <!--<archive>-->
+                                <!--<manifest>-->
+                                    <!--<mainClass>ar.itba.edu.ss.Generate</mainClass>-->
+                                <!--</manifest>-->
+                            <!--</archive>-->
+                            <!--<descriptorRefs>-->
+                                <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                            <!--</descriptorRefs>-->
+                            <!--&lt;!&ndash; <appendAssemblyId>false</appendAssemblyId> &ndash;&gt;-->
+                            <!--<finalName>Generate</finalName>-->
+                        <!--</configuration>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>single</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                    <!--<execution>-->
+                        <!--<id>build-b</id>-->
+                        <!--<configuration>-->
+                            <!--<archive>-->
+                                <!--<manifest>-->
+                                    <!--<mainClass>ar.itba.edu.ss.ComputeNeighbors</mainClass>-->
+                                <!--</manifest>-->
+                            <!--</archive>-->
+                            <!--<descriptorRefs>-->
+                                <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                            <!--</descriptorRefs>-->
+                            <!--&lt;!&ndash; <appendAssemblyId>false</appendAssemblyId> &ndash;&gt;-->
+                            <!--<finalName>Compute</finalName>-->
+                        <!--</configuration>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>single</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
                     <execution>
                         <id>build-c</id>
                         <configuration>
