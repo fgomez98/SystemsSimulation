@@ -142,6 +142,7 @@ public class AutonomusParticle extends Particle {
 
     @Override
     public String toString() {
-        return staticData().append(" ").append(dinamicData()).append(" ").append(angle).append("\n").toString();
+        double normalizedAngle = angle > 0 ? angle : angle + Math.PI * 2;
+        return staticData().append(" ").append(dinamicData()).append(" ").append(normalizedAngle).append("\n").toString();
     }
 }
