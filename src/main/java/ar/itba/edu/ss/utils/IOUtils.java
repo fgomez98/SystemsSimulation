@@ -1,5 +1,6 @@
 package ar.itba.edu.ss.utils;
 
+import ar.itba.edu.ss.model.AutonomusParticle;
 import ar.itba.edu.ss.model.Particle;
 import com.opencsv.CSVReader;
 
@@ -19,8 +20,8 @@ public class IOUtils {
     public static String STATIC_FILENAME = "static.csv";
     public static String DINAMIC_FILENAME = "dinamic.csv";
     public static String NEAR_BY_FILENAME = "nearby.csv";
-    public static String OFF_LATICE_STATIC_FILENAME = "off-latice-static.csv";
-    public static String OFF_LATICE_DINAMIC_FILENAME = "off-latice-dinamic.csv";
+    public static String OFF_LATICE_STATIC_FILENAME = "off-latice-static.txt";
+    public static String OFF_LATICE_DINAMIC_FILENAME = "off-latice-dinamic.txt";
     public static String OFF_LATICE_SIMULATION_FILENAME = "off-latice-simulation.xyz";
 
     public static List<Particle> CSVReadParticles(String staticPath, String dinamicPath) throws IOException {
@@ -35,6 +36,29 @@ public class IOUtils {
         long id = 0;
         while ((staticNextLine = staticReader.readNext()) != null && (dinamicNextLine = dinamicReader.readNext()) != null) {
             resp.add(new Particle(id++, Double.parseDouble(dinamicNextLine[0]), Double.parseDouble(dinamicNextLine[1]), Double.parseDouble(staticNextLine[0])));
+        }
+        return resp;
+    }
+
+    public static List<AutonomusParticle> CSVReadAutonomusParticles(String staticPath, String dinamicPath) throws IOException {
+        CSVReader staticReader = new CSVReader(new FileReader(staticPath), ' ');
+        CSVReader dinamicReader = new CSVReader(new FileReader(dinamicPath), ' ');
+        List<AutonomusParticle> resp = new ArrayList<>();
+        String[] staticNextLine;
+        String[] dinamicNextLine;
+        staticReader.readNext();
+        staticReader.readNext(); // leemos N y L
+        dinamicReader.readNext(); // leemos el tiempo To
+        long id = 0;
+        while ((staticNextLine = staticReader.readNext()) != null && (dinamicNextLine = dinamicReader.readNext()) != null) {
+            double x = Double.parseDouble(dinamicNextLine[0]);
+            double y = Double.parseDouble(dinamicNextLine[1]);
+            double radius = Double.parseDouble(staticNextLine[0]);
+            double vx = Double.parseDouble(dinamicNextLine[2]);
+            double vy = Double.parseDouble(dinamicNextLine[3]);
+            double angle = Math.atan2(vy, vx);
+            double velocity = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
+            resp.add(new AutonomusParticle(id++, x, y, radius, angle,velocity));
         }
         return resp;
     }

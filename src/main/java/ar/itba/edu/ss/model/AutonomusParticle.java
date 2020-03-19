@@ -124,11 +124,6 @@ public class AutonomusParticle extends Particle {
     }
 
     @Override
-    public StringBuilder staticData() {
-        return new StringBuilder(Long.toString(getId()));
-    }
-
-    @Override
     public StringBuilder dinamicData() {
         return super.dinamicData().append(" ").append(this.getXVelocity()).append(" ").append(this.getYVelocity());
     }
@@ -143,6 +138,7 @@ public class AutonomusParticle extends Particle {
     @Override
     public String toString() {
         double normalizedAngle = angle > 0 ? angle : angle + Math.PI * 2;
-        return staticData().append(" ").append(dinamicData()).append(" ").append(normalizedAngle).append("\n").toString();
+        StringBuilder sb = new StringBuilder(Long.toString(getId()));
+        return sb.append(" ").append(dinamicData()).append(" ").append(normalizedAngle).append("\n").toString();
     }
 }

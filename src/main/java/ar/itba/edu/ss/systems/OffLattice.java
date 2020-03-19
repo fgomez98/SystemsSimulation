@@ -27,12 +27,6 @@ public class OffLattice {
         this.appNoise = appNoise;
         this.L = l;
         this.M = (int) Math.ceil(l / 1); // utilizamos el M optimo
-//        try {
-//            IOUtils.CSVWriteParticles(particles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, particles.size(), l);
-//        } catch (IOException e) {
-//            System.err.println("An error has been encountered while writing output file");
-//            System.exit(1);
-//        }
     }
 
     public OffLattice(int n, double l, double appNoise) {
@@ -42,12 +36,12 @@ public class OffLattice {
         this.L = l;
         this.M = (int) Math.ceil(l / 1); // utilizamos el M optimo
         this.particles = AutonomusParticle.generate(n, l, 0, 2 * Math.PI, 0.03);
-//        try {
-//            IOUtils.CSVWriteParticles(this.particles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, this.particles.size(), l);
-//        } catch (IOException e) {
-//            System.err.println("An error has been encountered while writing output file");
-//            System.exit(1);
-//        }
+        try {
+            IOUtils.CSVWriteParticles(this.particles, OFF_LATICE_STATIC_FILENAME, OFF_LATICE_DINAMIC_FILENAME, this.particles.size(), l);
+        } catch (IOException e) {
+            System.err.println("An error has been encountered while writing output file");
+            System.exit(1);
+        }
     }
 
     public void simulate(int time) {

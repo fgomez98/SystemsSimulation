@@ -1,10 +1,16 @@
 package ar.itba.edu.ss;
 
+import ar.itba.edu.ss.model.AutonomusParticle;
 import ar.itba.edu.ss.systems.OffLattice;
 import ar.itba.edu.ss.utils.CmdParserUtils;
+import ar.itba.edu.ss.utils.IOUtils;
 import org.kohsuke.args4j.Option;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
+import java.util.Scanner;
 
 public class CellularAutomata {
 
@@ -19,6 +25,12 @@ public class CellularAutomata {
 
     @Option(name = "-Dt", usage = "Tiempo a simular", required = true)
     private int time;
+
+    @Option(name = "-Dsinput", usage = "Archivo estatico", forbids = {"-Dn"})
+    private String staticInputFilename;
+
+    @Option(name = "-Ddinput", usage = "Archivo dinamico", forbids = {"-Dn"})
+    private String dinamicInputFilename;
 
     public CellularAutomata() {
     }
@@ -55,6 +67,22 @@ public class CellularAutomata {
         this.time = time;
     }
 
+    public String getStaticInputFilename() {
+        return staticInputFilename;
+    }
+
+    public void setStaticInputFilename(String staticInputFilename) {
+        this.staticInputFilename = staticInputFilename;
+    }
+
+    public String getDinamicInputFilename() {
+        return dinamicInputFilename;
+    }
+
+    public void setDinamicInputFilename(String dinamicInputFilename) {
+        this.dinamicInputFilename = dinamicInputFilename;
+    }
+
     public static void main(String args[]) {
         CellularAutomata automata = new CellularAutomata();
         try {
@@ -68,7 +96,39 @@ public class CellularAutomata {
     }
 
     public void start() {
-        OffLattice offLattice = new OffLattice(n, l, appNoise);
+        OffLattice offLattice = null;
+
+        if (staticInputFilename != null && dinamicInputFilename != null) {
+
+//            TODO: read de particulas autonomas (hacer le metodo read generico para ambas)
+
+            List<AutonomusParticle> data = null;
+            try {
+                data = IOUtils.CSVReadAutonomusParticles(staticInputFilename, dinamicInputFilename);
+            } catch (Exception e) {
+                System.err.println("An error has been encountered while reading input file");
+                System.exit(1);
+            }
+
+        /*
+            Necesitamos conocer el N y L pasado en el archivo estatico
+         */
+
+            Scanner params = null;
+            try {
+                params = new Scanner(new File(staticInputFilename));
+            } catch (FileNotFoundException e) {
+                System.err.println("An error has been encountered while reading input file");
+                System.exit(1);
+            }
+
+            int n = params.nextInt(); // leemos el N pasado por el archivo estatico
+            double l = params.nextDouble(); // leemos el L pasado por el archivo estatico
+
+            offLattice = new OffLattice(data, l, n, appNoise);
+        } else {
+            offLattice = new OffLattice(n, l, appNoise);
+        }
 
         System.out.println("Starting simulation...");
 
