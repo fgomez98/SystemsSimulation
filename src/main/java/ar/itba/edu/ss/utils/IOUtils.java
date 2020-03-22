@@ -1,6 +1,6 @@
 package ar.itba.edu.ss.utils;
 
-import ar.itba.edu.ss.model.AutonomusParticle;
+import ar.itba.edu.ss.model.MovingParticle;
 import ar.itba.edu.ss.model.Particle;
 import com.opencsv.CSVReader;
 
@@ -40,10 +40,10 @@ public class IOUtils {
         return resp;
     }
 
-    public static List<AutonomusParticle> CSVReadAutonomusParticles(String staticPath, String dinamicPath) throws IOException {
+    public static List<MovingParticle> CSVReadAutonomusParticles(String staticPath, String dinamicPath) throws IOException {
         CSVReader staticReader = new CSVReader(new FileReader(staticPath), ' ');
         CSVReader dinamicReader = new CSVReader(new FileReader(dinamicPath), ' ');
-        List<AutonomusParticle> resp = new ArrayList<>();
+        List<MovingParticle> resp = new ArrayList<>();
         String[] staticNextLine;
         String[] dinamicNextLine;
         staticReader.readNext();
@@ -58,7 +58,7 @@ public class IOUtils {
             double vy = Double.parseDouble(dinamicNextLine[3]);
             double angle = Math.atan2(vy, vx);
             double velocity = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
-            resp.add(new AutonomusParticle(id++, x, y, radius, angle,velocity));
+            resp.add(new MovingParticle(id++, x, y, radius, angle,velocity));
         }
         return resp;
     }

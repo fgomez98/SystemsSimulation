@@ -1,6 +1,6 @@
 package ar.itba.edu.ss;
 
-import ar.itba.edu.ss.model.AutonomusParticle;
+import ar.itba.edu.ss.model.MovingParticle;
 import ar.itba.edu.ss.systems.OffLattice;
 import ar.itba.edu.ss.utils.CmdParserUtils;
 import ar.itba.edu.ss.utils.IOUtils;
@@ -102,7 +102,7 @@ public class CellularAutomata {
 
 //            TODO: read de particulas autonomas (hacer le metodo read generico para ambas)
 
-            List<AutonomusParticle> data = null;
+            List<MovingParticle> data = null;
             try {
                 data = IOUtils.CSVReadAutonomusParticles(staticInputFilename, dinamicInputFilename);
             } catch (Exception e) {

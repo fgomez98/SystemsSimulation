@@ -5,42 +5,42 @@ import ar.itba.edu.ss.utils.Rand;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AutonomusParticle extends Particle {
+public class MovingParticle extends Particle {
 
     private double angle;
     private double velocity;
 
-    public AutonomusParticle(Particle particle, double angle, double velocity) {
+    public MovingParticle(Particle particle, double angle, double velocity) {
         super(particle.getId(), particle.getX(), particle.getY(), particle.getRadius());
         this.angle = angle;
         this.velocity = velocity;
     }
 
-    public AutonomusParticle(long id, double x, double y, double radius, double angle, double velocity) {
+    public MovingParticle(long id, double x, double y, double radius, double angle, double velocity) {
         super(id, x, y, radius);
         this.angle = angle;
         this.velocity = velocity;
     }
 
-    public AutonomusParticle(double x, double y, double radius, double angle, double velocity) {
+    public MovingParticle(double x, double y, double radius, double angle, double velocity) {
         super(x, y, radius);
         this.angle = angle;
         this.velocity = velocity;
     }
 
-    public AutonomusParticle(double x, double y, double angle, double velocity) {
+    public MovingParticle(double x, double y, double angle, double velocity) {
         super(x, y);
         this.angle = angle;
         this.velocity = velocity;
     }
 
-    public AutonomusParticle(double radius, double angle, double velocity) {
+    public MovingParticle(double radius, double angle, double velocity) {
         super(radius);
         this.angle = angle;
         this.velocity = velocity;
     }
 
-    public AutonomusParticle(double radius) {
+    public MovingParticle(double radius) {
         super(radius);
         this.angle = 0;
         this.velocity = 0;
@@ -50,16 +50,16 @@ public class AutonomusParticle extends Particle {
         La velocidad es fija
      */
 
-    public static AutonomusParticle create(double lBound, double rBound, double aBound, double velocity) {
-        return new AutonomusParticle(Particle.create(lBound, rBound), Rand.getInstance().nextDouble() * aBound, velocity);
+    public static MovingParticle create(double lBound, double rBound, double aBound, double velocity) {
+        return new MovingParticle(Particle.create(lBound, rBound), Rand.getInstance().nextDouble() * aBound, velocity);
     }
 
     /*
         La velocidad es fija para todas las particulas
      */
 
-    public static List<AutonomusParticle> generate(int size, double lBound, double rBound, double aBound, double velocity) {
-        return Particle.generate(size, lBound, rBound).stream().map(particle -> new AutonomusParticle(particle, Rand.getInstance().nextDouble() * aBound, velocity)).collect(Collectors.toList());
+    public static List<MovingParticle> generate(int size, double lBound, double rBound, double aBound, double velocity) {
+        return Particle.generate(size, lBound, rBound).stream().map(particle -> new MovingParticle(particle, Rand.getInstance().nextDouble() * aBound, velocity)).collect(Collectors.toList());
     }
 
     public double getVelocity() {
@@ -106,7 +106,7 @@ public class AutonomusParticle extends Particle {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        AutonomusParticle that = (AutonomusParticle) o;
+        MovingParticle that = (MovingParticle) o;
 
         if (Double.compare(that.angle, angle) != 0) return false;
         return Double.compare(that.velocity, velocity) == 0;
@@ -132,7 +132,7 @@ public class AutonomusParticle extends Particle {
         double vx = Double.parseDouble(dinamicData[2]);
         double vy = Double.parseDouble(dinamicData[3]);
         double angle = Math.atan2(vx, vy);
-        return new AutonomusParticle(id, Double.parseDouble(dinamicData[0]), Double.parseDouble(dinamicData[1]), Double.parseDouble(staticData[0]), angle, Double.parseDouble(dinamicData[4]));
+        return new MovingParticle(id, Double.parseDouble(dinamicData[0]), Double.parseDouble(dinamicData[1]), Double.parseDouble(staticData[0]), angle, Double.parseDouble(dinamicData[4]));
     }
 
     @Override

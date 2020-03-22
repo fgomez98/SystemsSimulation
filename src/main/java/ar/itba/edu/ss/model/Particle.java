@@ -38,6 +38,10 @@ public class Particle {
         this.radius = radius;
     }
 
+    protected void setId(long id) {
+        this.id = id;
+    }
+
     public long getId() {
         return id;
     }
@@ -166,5 +170,52 @@ public class Particle {
     @Override
     public String toString() {
         return staticData().append(" ").append(dinamicData()).append("\n").toString();
+    }
+
+    public static class Builder {
+        private long id;
+        private double x = 0;
+        private double y = 0;
+        private double radius = 0;
+
+        public Builder() {
+        }
+
+        public Builder(long id) {
+            this.id = id;
+        }
+
+        public Builder withCoordinates(double x, double y) {
+            this.x = x;
+            this.y = y;
+            return this;
+        }
+
+        public Builder withRandomCoordinates(double lBound) {
+            this.x = Rand.getInstance().nextDouble() * lBound;
+            this.y = Rand.getInstance().nextDouble() * lBound;
+            return this;
+        }
+
+        public Builder withRandomRadius(double rBound) {
+            this.radius = Rand.getInstance().nextDouble() * rBound;
+            return this;
+        }
+
+        public Builder withRadius(double radius) {
+            this.radius = radius;
+            return this;
+        }
+
+        public Particle build() {
+            return new Particle(this);
+        }
+    }
+
+    private Particle(Builder builder) {
+        this.id = builder.id;
+        this.x = builder.x;
+        this.y = builder.y;
+        this.radius = builder.radius;
     }
 }
