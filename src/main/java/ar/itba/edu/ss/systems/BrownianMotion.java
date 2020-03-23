@@ -1,17 +1,18 @@
 package ar.itba.edu.ss.systems;
 
+import ar.itba.edu.ss.model.Event;
 import ar.itba.edu.ss.model.HardParticle;
 import ar.itba.edu.ss.utils.IOUtils;
 import ar.itba.edu.ss.utils.Rand;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static ar.itba.edu.ss.utils.IOUtils.*;
 
 public class BrownianMotion {
 
+    private Queue<Event> queue;
     private List<HardParticle> particles;
     private int M; // dim matriz
     private final double L = 0.5; // ancho del cell en metros
@@ -26,6 +27,7 @@ public class BrownianMotion {
     }
 
     public BrownianMotion(List<HardParticle> particles) {
+        this.queue = new PriorityQueue<>();
         this.particles = particles;
         this.N = particles.size();
         this.M = (int) Math.ceil(L / 2 * Math.max(R1, R2) + 0);    // M optimo, criterio: L/M > radio interaccion + 2 * radioMax
@@ -45,6 +47,16 @@ public class BrownianMotion {
             System.err.println("An error has been encountered while writing output file");
             System.exit(1);
         }
+    }
+
+    private Optional<Event> getNextEvent() {
+        Event next = null;
+        while (!queue.isEmpty() && !(next = queue.poll()).isValid());
+        return Optional.of(next);
+    }
+
+    private void addEvent(Event event) {
+        queue.offer(event);
     }
 
     public static void main(String args[]) {
