@@ -118,7 +118,7 @@ public class ComputeNeighbors {
         int n = params.nextInt(); // leemos el N pasado por el archivo estatico
         double l = params.nextDouble(); // leemos el L pasado por el archivo estatico
 
-        double maxRadius = data.stream().max(Comparator.comparingDouble(Particle::getRadius)).orElse(new Particle(0)).getRadius();
+        double maxRadius = data.stream().max(Comparator.comparingDouble(Particle::getRadius)).orElse(new Particle.Builder().withRadius(0).build()).getRadius();
 
         // criterio: L/M > rc + 2 * radioMax
         if (l / m < radio_interaccion + 2 * maxRadius) {

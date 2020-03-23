@@ -38,7 +38,10 @@ public class IOUtils {
         dinamicReader.readNext(); // leemos el tiempo To
         long id = 0;
         while ((staticNextLine = staticReader.readNext()) != null && (dinamicNextLine = dinamicReader.readNext()) != null) {
-            resp.add(new Particle(id++, Double.parseDouble(dinamicNextLine[0]), Double.parseDouble(dinamicNextLine[1]), Double.parseDouble(staticNextLine[0])));
+            resp.add(new Particle.Builder(id++).
+                    withCoordinates(Double.parseDouble(dinamicNextLine[0]), Double.parseDouble(dinamicNextLine[1]))
+                    .withRadius(Double.parseDouble(staticNextLine[0]))
+                    .build());
         }
         return resp;
     }
@@ -61,7 +64,11 @@ public class IOUtils {
             double vy = Double.parseDouble(dinamicNextLine[3]);
             double angle = Math.atan2(vy, vx);
             double velocity = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
-            resp.add(new MovingParticle(id++, x, y, radius, angle,velocity));
+            resp.add((MovingParticle) new MovingParticle.Builder(id++)
+                    .withVelocity(velocity)
+                    .withAngle(angle)
+                    .withRadius(radius)
+                    .withCoordinates(x, y).build());
         }
         return resp;
     }

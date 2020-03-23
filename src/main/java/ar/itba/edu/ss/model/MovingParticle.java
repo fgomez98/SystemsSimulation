@@ -1,7 +1,5 @@
 package ar.itba.edu.ss.model;
 
-import ar.itba.edu.ss.utils.Rand;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,56 +8,12 @@ public class MovingParticle extends Particle {
     private double angle;
     private double velocity;
 
-    public MovingParticle(Particle particle, double angle, double velocity) {
-        super(particle.getId(), particle.getX(), particle.getY(), particle.getRadius());
-        this.angle = angle;
-        this.velocity = velocity;
-    }
-
-    public MovingParticle(long id, double x, double y, double radius, double angle, double velocity) {
-        super(id, x, y, radius);
-        this.angle = angle;
-        this.velocity = velocity;
-    }
-
-    public MovingParticle(double x, double y, double radius, double angle, double velocity) {
-        super(x, y, radius);
-        this.angle = angle;
-        this.velocity = velocity;
-    }
-
-    public MovingParticle(double x, double y, double angle, double velocity) {
-        super(x, y);
-        this.angle = angle;
-        this.velocity = velocity;
-    }
-
-    public MovingParticle(double radius, double angle, double velocity) {
-        super(radius);
-        this.angle = angle;
-        this.velocity = velocity;
-    }
-
-    public MovingParticle(double radius) {
-        super(radius);
-        this.angle = 0;
-        this.velocity = 0;
-    }
-
-    /*
-        La velocidad es fija
-     */
-
-    public static MovingParticle create(double lBound, double rBound, double aBound, double velocity) {
-        return new MovingParticle(Particle.create(lBound, rBound), Rand.getInstance().nextDouble() * aBound, velocity);
-    }
-
-    /*
-        La velocidad es fija para todas las particulas
-     */
-
     public static List<MovingParticle> generate(int size, double lBound, double rBound, double aBound, double velocity) {
-        return Particle.generate(size, lBound, rBound).stream().map(particle -> new MovingParticle(particle, Rand.getInstance().nextDouble() * aBound, velocity)).collect(Collectors.toList());
+        return Particle.generate(size, lBound, rBound).stream().map(particle -> new Builder(particle)
+                .withRandomAngle(aBound)
+                .withVelocity(velocity)
+                .build())
+                .collect(Collectors.toList());
     }
 
     public double getVelocity() {
@@ -128,17 +82,68 @@ public class MovingParticle extends Particle {
         return super.dinamicData().append(" ").append(this.getXVelocity()).append(" ").append(this.getYVelocity());
     }
 
-    public static Particle from(long id, String[] staticData, String[] dinamicData) {
-        double vx = Double.parseDouble(dinamicData[2]);
-        double vy = Double.parseDouble(dinamicData[3]);
-        double angle = Math.atan2(vx, vy);
-        return new MovingParticle(id, Double.parseDouble(dinamicData[0]), Double.parseDouble(dinamicData[1]), Double.parseDouble(staticData[0]), angle, Double.parseDouble(dinamicData[4]));
-    }
-
     @Override
     public String toString() {
         double normalizedAngle = angle > 0 ? angle : angle + Math.PI * 2;
         StringBuilder sb = new StringBuilder(Long.toString(getId()));
         return sb.append(" ").append(dinamicData()).append(" ").append(normalizedAngle).append("\n").toString();
+    }
+
+    public static class Builder extends Particle.Builder {
+
+        private double angle;
+        private double velocity;
+
+        public Builder() {
+            super();
+        }
+
+        public Builder(long id) {
+            super(id);
+        }
+
+        public Builder(Particle particle) {
+            this(particle.getId());
+            withCoordinates(particle.getX(), particle.getY());
+            withRadius(particle.getRadius());
+        }
+
+        public Builder withVelocity(double velocity) {
+            this.velocity = velocity;
+            return this;
+        }
+
+        public Builder withRandomVelocity(double vBound) {
+            this.velocity = this.getRandom(vBound);
+            return this;
+        }
+
+        public Builder withAngle(double angle) {
+            this.angle = angle;
+            return this;
+        }
+
+        public Builder withRandomAngle(double aBound) {
+            this.angle = this.getRandom(aBound);
+            return this;
+        }
+
+        public double getAngle() {
+            return angle;
+        }
+
+        public double getVelocity() {
+            return velocity;
+        }
+
+        public MovingParticle build() {
+            return new MovingParticle(this);
+        }
+    }
+
+    protected MovingParticle(Builder builder) {
+        super(builder);
+        this.angle = builder.angle;
+        this.velocity = builder.velocity;
     }
 }

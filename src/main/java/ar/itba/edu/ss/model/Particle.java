@@ -13,35 +13,6 @@ public class Particle {
     private double y;
     private double radius;
 
-    public Particle(long id, double x, double y, double radius) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-    }
-
-    public Particle(double x, double y, double radius) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-    }
-
-    public Particle(double x, double y) {
-        this.x = x;
-        this.y = y;
-        this.radius = 0;
-    }
-
-    public Particle(double radius) {
-        this.x = 0;
-        this.y = 0;
-        this.radius = radius;
-    }
-
-    protected void setId(long id) {
-        this.id = id;
-    }
-
     public long getId() {
         return id;
     }
@@ -73,6 +44,17 @@ public class Particle {
         this.y = y;
     }
 
+    protected void setId(long id) {
+        this.id = id;
+    }
+
+    /*
+        Mutable solo si necesito  para optimizar
+    */
+    public void setRadius(double radius) {
+        this.radius = radius;
+    }
+
     public double distanceTo(Particle other) {
         double ctr_dist = Point.distance(this.getX(), this.getY(), other.getX(), other.getY());
         return ctr_dist == 0 ? 0 : ctr_dist - this.getRadius() - other.getRadius();
@@ -99,16 +81,14 @@ public class Particle {
         return x + radius < lBound && x - radius > 0 && y + radius < lBound && y - radius > 0;
     }
 
-    public static Particle create(double lBound, double rBound) {
-        return new Particle(Rand.getInstance().nextDouble() * lBound, Rand.getInstance().nextDouble() * lBound, Rand.getInstance().nextDouble() * rBound);
-    }
-
     public static List<Particle> generate(int size, double lBound, double rBound) {
         List<Particle> particles = new LinkedList<>();
         int i = 0, attempts = 0;
         while (i != size) {
-            Particle randomParticle = Particle.create(lBound, rBound);
-            randomParticle.id = i;
+            Particle randomParticle = new Builder(i)
+                    .withRandomCoordinates(lBound)
+                    .withRandomRadius(rBound)
+                    .build();
             if (randomParticle.inBound(lBound)) {
                 boolean valid = particles.stream().noneMatch(particle -> particle.interacts(randomParticle));
                 if (valid) {
@@ -149,10 +129,6 @@ public class Particle {
         return result;
     }
 
-    public static Particle from(long id, String[] staticData, String[] dinamicData) {
-        return new Particle(id, Double.parseDouble(dinamicData[0]), Double.parseDouble(dinamicData[1]), Double.parseDouble(staticData[0]));
-    }
-
     /*
         Devolvemos  stringBuilder por si se quiere agregar mas data estatica asi optimizar
     */
@@ -174,9 +150,13 @@ public class Particle {
 
     public static class Builder {
         private long id;
-        private double x = 0;
-        private double y = 0;
-        private double radius = 0;
+        private double x;
+        private double y;
+        private double radius;
+
+        protected double getRandom(double bound) {
+            return Rand.getInstance().nextDouble() * bound;
+        }
 
         public Builder() {
         }
@@ -192,13 +172,13 @@ public class Particle {
         }
 
         public Builder withRandomCoordinates(double lBound) {
-            this.x = Rand.getInstance().nextDouble() * lBound;
-            this.y = Rand.getInstance().nextDouble() * lBound;
+            this.x = getRandom(lBound);
+            this.y = getRandom(lBound);
             return this;
         }
 
         public Builder withRandomRadius(double rBound) {
-            this.radius = Rand.getInstance().nextDouble() * rBound;
+            this.radius = getRandom(rBound);
             return this;
         }
 
@@ -207,12 +187,28 @@ public class Particle {
             return this;
         }
 
+        public double getX() {
+            return x;
+        }
+
+        public double getY() {
+            return y;
+        }
+
+        public double getRadius() {
+            return radius;
+        }
+
+        public long getId() {
+            return id;
+        }
+
         public Particle build() {
             return new Particle(this);
         }
     }
 
-    private Particle(Builder builder) {
+    protected Particle(Builder builder) {
         this.id = builder.id;
         this.x = builder.x;
         this.y = builder.y;

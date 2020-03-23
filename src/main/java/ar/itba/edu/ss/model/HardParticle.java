@@ -1,7 +1,6 @@
 package ar.itba.edu.ss.model;
 
 import ar.itba.edu.ss.utils.MathUtils;
-import ar.itba.edu.ss.utils.Rand;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,31 +10,11 @@ public class HardParticle extends MovingParticle {
     private double mass;
     private long collisionCount = 0;
 
-    public HardParticle(long id, double x, double y, double radius, double angle, double velocity, double mass) {
-        super(id, x, y, radius, angle, velocity);
-        this.mass = mass;
-    }
-
-    public HardParticle(double x, double y, double radius, double angle, double velocity, double mass) {
-        super(x, y, radius, angle, velocity);
-        this.mass = mass;
-    }
-
-    public HardParticle(Particle particle, double angle, double velocity, double mass) {
-        this(particle.getId(), particle.getX(), particle.getY(), particle.getRadius(), angle, velocity, mass);
-        this.mass = mass;
-    }
-
-    public static HardParticle create(double lBound, double radius, double aBound, double vBound, double mass) {
-        return new HardParticle(new Particle.Builder().withRandomCoordinates(lBound).withRadius(radius).build(), Rand.getInstance().nextDouble() * aBound, Rand.getInstance().nextDouble() * vBound, mass);
-    }
-
     public static List<HardParticle> generate(List<HardParticle> initialParticles, int size, double lBound, double radius, double aBound, double vBound, double mass) {
         List<HardParticle> particles = new LinkedList<>(initialParticles);
         int i = initialParticles.size();
         while (i != size + initialParticles.size()) {
-            HardParticle randomParticle = HardParticle.create(lBound, radius, aBound, vBound, mass);
-            randomParticle.setId(i);
+            HardParticle randomParticle =  (HardParticle) new Builder(i).withMass(mass).withRandomAngle(aBound).withRandomVelocity(vBound).withRandomCoordinates(lBound).withRadius(radius).build();
             if (randomParticle.inBound(lBound)) {
                 boolean valid = particles.stream().noneMatch(particle -> particle.interacts(randomParticle));
                 if (valid) {
@@ -166,5 +145,40 @@ public class HardParticle extends MovingParticle {
     public String toString() {
         StringBuilder sb = new StringBuilder(Long.toString(getId()));
         return sb.append(" ").append(dinamicData()).append("\n").toString();
+    }
+
+    public static class Builder extends MovingParticle.Builder {
+
+        private double mass;
+
+        public Builder() {
+        }
+
+        public Builder(long id) {
+            super(id);
+        }
+
+        public Builder withMass(double mass) {
+            this.mass = mass;
+            return this;
+        }
+
+        public Builder withRandomMass(double mBound) {
+            this.mass = this.getRandom(mBound);
+            return this;
+        }
+
+        public double getMass() {
+            return mass;
+        }
+
+        public HardParticle build() {
+            return new HardParticle(this);
+        }
+    }
+
+    protected HardParticle(Builder builder) {
+        super(builder);
+        this.mass = builder.mass;
     }
 }

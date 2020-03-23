@@ -37,7 +37,13 @@ public class BrownianMotion {
         this();
         this.N = n;
         this.M = (int) Math.ceil(L / 2 * Math.max(R1, R2) + 0); // M optimo, criterio: L/M > radio interaccion + 2 * radioMax
-        HardParticle particle = new HardParticle(L / 2, L / 2, R2, Rand.getInstance().nextDouble() * 2 * Math.PI, 0, M2);
+        HardParticle particle = (HardParticle) new HardParticle.Builder()
+                .withMass(M2)
+                .withRandomAngle(2 * Math.PI)
+                .withVelocity(0)
+                .withCoordinates(L / 2, L / 2)
+                .withRadius(R2)
+                .build();
         List<HardParticle> initialParticles = new LinkedList<>();
         initialParticles.add(particle);
         this.particles = HardParticle.generate(initialParticles, N - 1, L, R1, 2 * Math.PI, 0.1, M1);
@@ -51,7 +57,7 @@ public class BrownianMotion {
 
     private Optional<Event> getNextEvent() {
         Event next = null;
-        while (!queue.isEmpty() && !(next = queue.poll()).isValid());
+        while (!queue.isEmpty() && !(next = queue.poll()).isValid()) ;
         return Optional.of(next);
     }
 
