@@ -99,9 +99,9 @@ public class IOUtils {
         CSVWrite(Paths.get(path), data, headers, toCsvRow, append);
     }
 
-    public static void ovitoOutputParticles(String filename, List<? extends Particle> particles, int timeInterval) {
+    public static void ovitoOutputParticles(String filename, List<? extends Particle> particles, int timeInterval, boolean append) {
         try {
-            IOUtils.CSVWrite(filename, particles, Integer.toString(particles.size()) + "\n" + timeInterval + "\n", Particle::toString, true);
+            IOUtils.CSVWrite(filename, particles, Integer.toString(particles.size()) + "\n" + timeInterval + "\n", Particle::toString, append);
         } catch (IOException e) {
             System.err.println("An error has been encountered while writing output file");
             System.exit(1);

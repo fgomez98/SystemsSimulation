@@ -49,7 +49,7 @@ public class BrownianMotion {
 
     public static void main(String args[]) {
         BrownianMotion bm = new BrownianMotion(300);
-        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, bm.particles, 0);
+        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, bm.particles, 0, false);
 
 //        System.out.println("Starting simulation...");
 //        long start = System.currentTimeMillis();
