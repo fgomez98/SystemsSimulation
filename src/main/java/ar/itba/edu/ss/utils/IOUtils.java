@@ -23,6 +23,9 @@ public class IOUtils {
     public static String OFF_LATICE_STATIC_FILENAME = "off-latice-static.txt";
     public static String OFF_LATICE_DINAMIC_FILENAME = "off-latice-dinamic.txt";
     public static String OFF_LATICE_SIMULATION_FILENAME = "off-latice-simulation.xyz";
+    public static String BROWNIAN_MOTION_STATIC_FILENAME = "brownian-motion-static.txt";
+    public static String BROWNIAN_MOTION_DINAMIC_FILENAME = "brownian-motion-dinamic.txt";
+    public static String BROWNIAN_MOTION_SIMULATION_FILENAME = "brownian-motion-simulation.xyz";
 
     public static List<Particle> CSVReadParticles(String staticPath, String dinamicPath) throws IOException {
         CSVReader staticReader = new CSVReader(new FileReader(staticPath), ' ');
@@ -40,7 +43,7 @@ public class IOUtils {
         return resp;
     }
 
-    public static List<MovingParticle> CSVReadAutonomusParticles(String staticPath, String dinamicPath) throws IOException {
+    public static List<MovingParticle> CSVReadMovingParticles(String staticPath, String dinamicPath) throws IOException {
         CSVReader staticReader = new CSVReader(new FileReader(staticPath), ' ');
         CSVReader dinamicReader = new CSVReader(new FileReader(dinamicPath), ' ');
         List<MovingParticle> resp = new ArrayList<>();
@@ -94,6 +97,15 @@ public class IOUtils {
 
     public static <K> void CSVWrite(String path, Collection<K> data, String headers, Function<K, String> toCsvRow, boolean append) throws IOException {
         CSVWrite(Paths.get(path), data, headers, toCsvRow, append);
+    }
+
+    public static void ovitoOutputParticles(String filename, List<? extends Particle> particles, int timeInterval) {
+        try {
+            IOUtils.CSVWrite(filename, particles, Integer.toString(particles.size()) + "\n" + timeInterval + "\n", Particle::toString, true);
+        } catch (IOException e) {
+            System.err.println("An error has been encountered while writing output file");
+            System.exit(1);
+        }
     }
 
 }

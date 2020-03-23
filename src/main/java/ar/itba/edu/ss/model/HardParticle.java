@@ -3,6 +3,7 @@ package ar.itba.edu.ss.model;
 import ar.itba.edu.ss.utils.MathUtils;
 import ar.itba.edu.ss.utils.Rand;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class HardParticle extends MovingParticle {
@@ -29,10 +30,10 @@ public class HardParticle extends MovingParticle {
         return new HardParticle(new Particle.Builder().withRandomCoordinates(lBound).withRadius(radius).build(), Rand.getInstance().nextDouble() * aBound, Rand.getInstance().nextDouble() * vBound, mass);
     }
 
-    public static List<Particle> generate(List<Particle> initialParticles, int size, double lBound, double radius, double aBound, double vBound, double mass) {
-        List<Particle> particles = initialParticles;
-        int i = 0;
-        while (i != size) {
+    public static List<HardParticle> generate(List<HardParticle> initialParticles, int size, double lBound, double radius, double aBound, double vBound, double mass) {
+        List<HardParticle> particles = new LinkedList<>(initialParticles);
+        int i = initialParticles.size();
+        while (i != size + initialParticles.size()) {
             HardParticle randomParticle = HardParticle.create(lBound, radius, aBound, vBound, mass);
             randomParticle.setId(i);
             if (randomParticle.inBound(lBound)) {
@@ -154,5 +155,16 @@ public class HardParticle extends MovingParticle {
 
     public double getMass() {
         return mass;
+    }
+
+    @Override
+    public StringBuilder dinamicData() {
+        return super.dinamicData().append(" ").append(this.getMass());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(Long.toString(getId()));
+        return sb.append(" ").append(dinamicData()).append("\n").toString();
     }
 }

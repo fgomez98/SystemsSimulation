@@ -49,6 +49,9 @@ off-latice-dinamic.csv
 off-latice-simulation.xyz
 off-latice-static.csv
 off-latice-va-*.txt
+brownian-motion-dinamic.txt
+brownian-motion-simulation.xyz
+brownian-motion-static.txt
 nearby.csv
 
 Simulation Frames/*

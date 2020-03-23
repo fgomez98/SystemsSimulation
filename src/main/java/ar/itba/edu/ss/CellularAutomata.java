@@ -104,7 +104,7 @@ public class CellularAutomata {
 
             List<MovingParticle> data = null;
             try {
-                data = IOUtils.CSVReadAutonomusParticles(staticInputFilename, dinamicInputFilename);
+                data = IOUtils.CSVReadMovingParticles(staticInputFilename, dinamicInputFilename);
             } catch (Exception e) {
                 System.err.println("An error has been encountered while reading input file");
                 System.exit(1);
