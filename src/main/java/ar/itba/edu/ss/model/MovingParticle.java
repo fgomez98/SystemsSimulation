@@ -49,7 +49,7 @@ public class MovingParticle extends Particle {
     /*
         tiempo en segundos
      */
-    public void move(int time_interval) {
+    public void move(double time_interval) {
         this.setX(this.getX() + Math.cos(this.getAngle()) * this.getVelocity() * time_interval);
         this.setY(this.getY() + Math.sin(this.getAngle()) * this.getVelocity() * time_interval);
     }

@@ -14,7 +14,7 @@ public class HardParticle extends MovingParticle {
         List<HardParticle> particles = new LinkedList<>(initialParticles);
         int i = initialParticles.size();
         while (i != size + initialParticles.size()) {
-            HardParticle randomParticle =  (HardParticle) new Builder(i).withMass(mass).withRandomAngle(aBound).withRandomVelocity(vBound).withRandomCoordinates(lBound).withRadius(radius).build();
+            HardParticle randomParticle = (HardParticle) new Builder(i).withMass(mass).withRandomAngle(aBound).withRandomVelocity(vBound).withRandomCoordinates(lBound).withRadius(radius).build();
             if (randomParticle.inBound(lBound)) {
                 boolean valid = particles.stream().noneMatch(particle -> particle.interacts(randomParticle));
                 if (valid) {
@@ -48,29 +48,25 @@ public class HardParticle extends MovingParticle {
         if (getYVelocity() > 0) {
             return (wallY2 - getRadius() - getY()) / getYVelocity();
         } else if (getYVelocity() < 0) {
-            return (wallY2 + getRadius() - getY()) / getYVelocity();
+            return (wallY1 + getRadius() - getY()) / getYVelocity();
         }
         return -1;
     }
 
-    private double calculateD(double[] deltaR, double[] deltaV, double[] radius) {
-        return Math.pow(MathUtils.dot(deltaV, deltaR), 2) - MathUtils.dot(deltaV, deltaV) * (MathUtils.dot(deltaR, deltaR) - (radius[0] + radius[1]));
+    private double calculateD(double[] deltaR, double[] deltaV, double sigma) {
+        return Math.pow(MathUtils.dot(deltaV, deltaR), 2) - (MathUtils.dot(deltaV, deltaV) * (MathUtils.dot(deltaR, deltaR) - Math.pow(sigma, 2)));
     }
 
     public double collides(HardParticle b) {
-        double[] radius = {getRadius(), b.getRadius()};
-        double[] deltaX = {getX(), b.getX()};
-        double[] deltaY = {getY(), b.getY()};
-        double[] deltaVX = {getXVelocity(), b.getXVelocity()};
-        double[] deltaVY = {getYVelocity(), b.getYVelocity()};
-        double[] deltaR = MathUtils.delta(deltaX, deltaY);
-        double[] deltaV = MathUtils.delta(deltaVX, deltaVY);
-        double d = calculateD(deltaR, deltaV, radius);
+        double sigma = getRadius() + b.getRadius();
+        double[] deltaR = {b.getX() - this.getX(), b.getY() - this.getY(),};
+        double[] deltaV = {b.getXVelocity() - this.getXVelocity(), b.getYVelocity() - this.getYVelocity()};
+        double d = calculateD(deltaR, deltaV, sigma);
         double dotVR = MathUtils.dot(deltaV, deltaR);
         if (d < 0 || (dotVR >= 0)) {
             return -1;
         }
-        return -1 * ((dotVR + Math.sqrt(d)) / MathUtils.dot(deltaV, deltaV));
+        return -((dotVR + Math.sqrt(d)) / MathUtils.dot(deltaV, deltaV));
     }
 
     /*
@@ -91,38 +87,36 @@ public class HardParticle extends MovingParticle {
         collisionCount++;
     }
 
-    private double calculateJ(double[] mass, double[] deltaR, double[] deltaV, double[] radius) {
-        return (2 * mass[0] * mass[1] * (MathUtils.dot(deltaV, deltaR))) / ((radius[0] + radius[1]) * (mass[0] + mass[1]));
+    private double calculateJ(double[] mass, double[] deltaR, double[] deltaV, double sigma) {
+        return (2 * mass[0] * mass[1] * MathUtils.dot(deltaV, deltaR)) / (sigma * (mass[0] + mass[1]));
     }
 
     public void bounce(HardParticle b) {
         double[] mass = {getMass(), b.getMass()};
-        double[] radius = {getRadius(), b.getRadius()};
-        double[] deltaX = {getX(), b.getX()};
-        double[] deltaY = {getY(), b.getY()};
-        double[] deltaVX = {getXVelocity(), b.getXVelocity()};
-        double[] deltaVY = {getYVelocity(), b.getYVelocity()};
-        double[] deltaR = MathUtils.delta(deltaX, deltaY);
-        double[] deltaV = MathUtils.delta(deltaVX, deltaVY);
+        double deltaX = b.getX() - this.getX();
+        double deltaY = b.getY() - this.getY();
+        double sigma = getRadius() + b.getRadius();
+        double[] deltaR = {deltaX, deltaY};
+        double[] deltaV = {b.getXVelocity() - this.getXVelocity(), b.getYVelocity() - this.getYVelocity()};
 
-        double j = calculateJ(mass, deltaR, deltaV, radius);
-        double jx = j * MathUtils.delta(deltaX) / (radius[0] + radius[1]);
-        double jy = j * MathUtils.delta(deltaY) / (radius[0] + radius[1]);
+        double j = calculateJ(mass, deltaR, deltaV, sigma);
+        double jx = (j * deltaX) / sigma;
+        double jy = (j * deltaY) / sigma;
 
         // vxid = vxia + Jx/mi
         // Modificamos la velocidad de esta particula
-        double vxAux = getXVelocity() + jx / getMass();
-        double vyAux = getYVelocity() + jy / getMass();
-        setVelocity(Math.sqrt(Math.pow(vxAux, 2) + Math.pow(vyAux, 2)));
+        double vxAux = getXVelocity() + (jx / getMass());
+        double vyAux = getYVelocity() + (jy / getMass());
         setAngle(Math.atan2(vyAux, vxAux));
+        setVelocity(Math.sqrt(Math.pow(vxAux, 2) + Math.pow(vyAux, 2)));
 
         // vyjd = vyja - Jy/mj
         // Modificamos la velocidad de la otra particula
 
-        vxAux = b.getXVelocity() - jx / b.getMass();
-        vyAux = b.getYVelocity() - jy / b.getMass();
-        b.setVelocity(Math.sqrt(Math.pow(vxAux, 2) + Math.pow(vyAux, 2)));
+        vxAux = b.getXVelocity() - (jx / b.getMass());
+        vyAux = b.getYVelocity() - (jy / b.getMass());
         b.setAngle(Math.atan2(vyAux, vxAux));
+        b.setVelocity(Math.sqrt(Math.pow(vxAux, 2) + Math.pow(vyAux, 2)));
 
         collisionCount++;
         b.collisionCount++;
@@ -137,14 +131,14 @@ public class HardParticle extends MovingParticle {
     }
 
     @Override
-    public StringBuilder dinamicData() {
-        return super.dinamicData().append(" ").append(this.getMass());
+    public StringBuilder staticData() {
+        return super.staticData().append(" ").append(this.getMass());
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(Long.toString(getId()));
-        return sb.append(" ").append(dinamicData()).append("\n").toString();
+        return sb.append(" ").append(staticData()).append(" ").append(dinamicData()).append("\n").toString();
     }
 
     public static class Builder extends MovingParticle.Builder {
