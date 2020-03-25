@@ -4,6 +4,7 @@ import ar.itba.edu.ss.utils.MathUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public class HardParticle extends MovingParticle {
 
@@ -139,6 +140,21 @@ public class HardParticle extends MovingParticle {
     public String toString() {
         StringBuilder sb = new StringBuilder(Long.toString(getId()));
         return sb.append(" ").append(staticData()).append(" ").append(dinamicData()).append("\n").toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        HardParticle that = (HardParticle) o;
+        return Double.compare(that.mass, mass) == 0 &&
+                collisionCount == that.collisionCount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mass, collisionCount);
     }
 
     public static class Builder extends MovingParticle.Builder {

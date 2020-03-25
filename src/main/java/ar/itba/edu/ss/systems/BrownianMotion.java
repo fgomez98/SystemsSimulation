@@ -75,77 +75,98 @@ public class BrownianMotion {
 //        Map<Particle, Set<Particle>> nearby = cim.cellIndexMethod();
 
         int frame = 0;
-
+        double time = 0;
         IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, particles, frame++, false);
 
-        computeNextCollision();
+        computeCollisions(time);
 
-        while (simulationTime > 0) {
-            Event event = getNextEvent().orElse(Event.from(1));
+        while (simulationTime > time) {
+            Event event = getNextEvent().get();
             /* Tiempo del el primer choque o incrementamos en 1 sino hay para redibujar el sistema */
             double tc = event.getTime();
+            double auxTime = tc - time;
             /*  Se evolucionan todas las partículas según sus ecuaciones de movimiento hasta tc */
-            particles.forEach(p -> p.move(tc));
+            particles.forEach(p -> p.move(auxTime));
             /* Adelantamos el tiempo */
-            simulationTime--;
+            time = tc;
             /* Collisionamos */
-            collide(event);
+            collide(event, time);
             /* Output */
             IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, particles, frame++, true);
-            /* Calculamos porximas colisiones */
-            computeNextCollision();
         }
     }
 
-    private void collide(Event event) {
+    private void collide(Event event, double currentTime) {
         switch (event.getType()) {
             case PARTICLE:
                 event.getA().get().bounce(event.getB().get());
+                nextCollision(event.getA().get(), currentTime);
+                nextCollision(event.getB().get(), currentTime);
                 break;
             case VERTICAL_WALL:
                 event.getA().get().bounceX();
+                nextCollision(event.getA().get(), currentTime);
                 break;
             case HORIZONTAL_WALL:
                 event.getA().get().bounceY();
+                nextCollision(event.getA().get(), currentTime);
                 break;
             case RE_DRAW:
+                // creo que al pedo
             default:
                 break;
         }
     }
 
-    private void computeNextCollision() {
-        this.queue = new PriorityQueue<>(); // todo: por que no directamente calculo el proxmio para cada iteracion, si total hay que computar siempre porximas collisiones
+    private void computeCollisions(double currentTime) {
         double collisionTime = 0;
         for (int i = 0; i < particles.size(); i++) {
             HardParticle aParticle = particles.get(i);
             collisionTime = aParticle.collidesX(0, L);
             if (collisionTime > 0) {
-                addEvent(Event.from(collisionTime, aParticle, Event.CollisionType.VERTICAL_WALL));
+                addEvent(Event.from(collisionTime + currentTime, aParticle, Event.CollisionType.VERTICAL_WALL));
             }
             collisionTime = aParticle.collidesY(0, L);
             if (collisionTime > 0) {
-                addEvent(Event.from(collisionTime, aParticle, Event.CollisionType.HORIZONTAL_WALL));
+                addEvent(Event.from(collisionTime + currentTime, aParticle, Event.CollisionType.HORIZONTAL_WALL));
             }
             for (int j = i + 1; j < particles.size(); j++) {
                 HardParticle otherParticle = particles.get(j);
                 collisionTime = aParticle.collides(otherParticle);
                 if (collisionTime > 0) {
-                    addEvent(Event.from(collisionTime, aParticle, otherParticle));
+                    addEvent(Event.from(collisionTime + currentTime, aParticle, otherParticle));
                 }
             }
         }
     }
 
+    private void nextCollision(HardParticle aParticle, double currentTime) {
+        double collisionTime = aParticle.collidesX(0, L);
+        if (collisionTime > 0) {
+            addEvent(Event.from(collisionTime + currentTime, aParticle, Event.CollisionType.VERTICAL_WALL));
+        }
+        collisionTime = aParticle.collidesY(0, L);
+        if (collisionTime > 0) {
+            addEvent(Event.from(collisionTime + currentTime, aParticle, Event.CollisionType.HORIZONTAL_WALL));
+        }
+        for (HardParticle otherParticle : particles) {
+            if (!otherParticle.equals(aParticle)) {
+                collisionTime = aParticle.collides(otherParticle);
+                if (collisionTime > 0) {
+                    addEvent(Event.from(collisionTime + currentTime, aParticle, otherParticle));
+                }
+            }
+        }
+    }
 
     public static void main(String args[]) {
-        BrownianMotion bm = new BrownianMotion(100);
-        bm.simulate(5000);
+        BrownianMotion bm = new BrownianMotion(10);
 
-//        System.out.println("Starting simulation...");
-//        long start = System.currentTimeMillis();
-//
-//
-//        System.out.println("Time elapsed: " + (System.currentTimeMillis() - start));
+        System.out.println("Starting simulation...");
+        long start = System.currentTimeMillis();
+
+        bm.simulate(500);
+
+        System.out.println("Time elapsed: " + (System.currentTimeMillis() - start));
     }
 }
