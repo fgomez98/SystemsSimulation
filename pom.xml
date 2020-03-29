@@ -165,18 +165,18 @@
                         <!--</goals>-->
                     <!--</execution>-->
                     <execution>
-                        <id>build-c</id>
+                        <id>build-a</id>
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>ar.itba.edu.ss.CellularAutomata</mainClass>
+                                    <mainClass>ar.itba.edu.ss.MolecularDinamic</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
                             <!-- <appendAssemblyId>false</appendAssemblyId> -->
-                            <finalName>CellularAutomata</finalName>
+                            <finalName>MolecularDinamic</finalName>
                         </configuration>
                         <phase>package</phase>
                         <goals>
