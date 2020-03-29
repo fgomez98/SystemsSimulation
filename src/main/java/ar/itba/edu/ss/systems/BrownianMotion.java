@@ -1,5 +1,6 @@
 package ar.itba.edu.ss.systems;
 
+import ar.itba.edu.ss.MolecularDinamic;
 import ar.itba.edu.ss.model.Event;
 import ar.itba.edu.ss.model.HardParticle;
 import ar.itba.edu.ss.utils.IOUtils;
@@ -138,6 +139,55 @@ public class BrownianMotion {
             collide(event, time);
         }
         outputCalculations(simulationTime);
+    }
+
+    public void simulateDCM(double simulationTime, MolecularDinamic.DCM dcm) throws IOException {
+        HardParticle dcmParticle = null;
+
+        switch (dcm) {
+            case BIGG:
+                dcmParticle = bigParticle;
+                break;
+            case SMALL:
+                dcmParticle = particles.stream().filter(particle ->  !particle.equals(bigParticle)).findAny().get();
+                break;
+        }
+
+        double time = 0;
+        double dcmTime = 0;
+        computeCollisions(time);
+
+        /*
+            Solo se deben considerar la segunda mitad de sus trayectorias,
+            teniendo en cuenta que la misma solo es válida hasta que choque con alguna de las paredes.
+         */
+        while (simulationTime > time) {
+            Event event = getNextEvent().get();
+            if (event.getType() == Event.CollisionType.HORIZONTAL_WALL || event.getType() == Event.CollisionType.VERTICAL_WALL) {
+                if (event.getA().get().equals(dcmParticle)) {
+                    // se choco contra una pared
+                    break;
+                }
+            }
+
+            /* Tiempo del el primer choque o incrementamos en 1 sino hay para redibujar el sistema */
+            double tc = event.getTime();
+            double auxTime = tc - time; // --> tiempo entre colsiones
+            collitionTimes.add(auxTime);
+
+            /*  Se evolucionan todas las partículas según sus ecuaciones de movimiento hasta tc */
+            particles.forEach(p -> p.move(auxTime));
+
+            /* Adelantamos el tiempo */
+            time = tc;
+
+            /*
+                 TODO: calculo de Z^2 y output
+            * */
+
+            /* Collisionamos */
+            collide(event, time);
+        }
     }
 
     private void collide(Event event, double currentTime) {

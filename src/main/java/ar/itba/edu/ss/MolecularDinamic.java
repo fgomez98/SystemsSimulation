@@ -8,11 +8,19 @@ import java.io.IOException;
 
 public class MolecularDinamic {
 
+    public static enum DCM {
+        BIGG, SMALL
+    }
+
     @Option(name = "-Dn", usage = "Numero de particulas", forbids = {"-Ddinput", "Dsinput"})
     private int n;
 
     @Option(name = "-Dt", usage = "Tiempo a simular", required = true)
     private int time;
+
+
+    @Option(name = "-Ddcm", usage = "Coeficiente de difusión de la partícula")
+    private DCM dcm;
 
     @Option(name = "-Dsinput", usage = "Archivo estatico", forbids = {"-Dn"})
     private String staticInputFilename;
@@ -108,7 +116,11 @@ public class MolecularDinamic {
         long startTime = System.currentTimeMillis();
 
         try {
-            brownianMotion.simulate(time);
+            if (dcm != null) {
+                brownianMotion.simulateDCM(time, dcm);
+            } else {
+                brownianMotion.simulate(time);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
