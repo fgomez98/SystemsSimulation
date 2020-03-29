@@ -19,6 +19,9 @@ public class BrownianMotion {
     private static String PDF_VELOCITY_INITIAL_FILENAME = "pdf-velocidad-initial.txt"; /* TODO: que onda lo del ultimo tercio ??*/
     private static String BIG_PARTICLE_TRAJECTORY_FILENAME = "big-particle-trajectory.txt";
 
+    private final double FPS = 10.0; // frames por segundo a usar para la animacion
+    private final double SPF = 1.0/ FPS; // seconds per frame
+
     private Queue<Event> queue;
     private List<HardParticle> particles;
     private int M; // dim matriz
@@ -106,12 +109,15 @@ public class BrownianMotion {
 
         while (simulationTime > time) {
             Event event = getNextEvent().get();
+
             /* Tiempo del el primer choque o incrementamos en 1 sino hay para redibujar el sistema */
             double tc = event.getTime();
             double auxTime = tc - time; // --> tiempo entre colsiones
             collitionTimes.add(auxTime);
+
             /*  Se evolucionan todas las partículas según sus ecuaciones de movimiento hasta tc */
             particles.forEach(p -> p.move(auxTime));
+
             /* Adelantamos el tiempo */
             time = tc;
 
@@ -121,11 +127,15 @@ public class BrownianMotion {
             }
             saveBigParticlePosition(simulationTime, time);
 
+            /* Output */
+            int currentFrame = (int) Math.floor(time / SPF);
+            while (frame < currentFrame) {
+                ovitoOutputParticles(frame++, time - frame * SPF);
+            }
+
             /* Collisionamos */
             COLLISIONS++;
             collide(event, time);
-            /* Output */
-            IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, particles, frame++, true);
         }
         outputCalculations(simulationTime);
     }
@@ -236,6 +246,16 @@ public class BrownianMotion {
                 velocityMap.put(particle.getId(), partialVelocitySum + particle.getVelocity());
             }
         }
+    }
+
+    private void ovitoOutputParticles(int frame, double dt) {
+        List<HardParticle> frameParticles = particles.stream().map(particle -> {
+            HardParticle cpyParticle = HardParticle.from(particle);
+            cpyParticle.setX(cpyParticle.getX() - cpyParticle.getXVelocity() * dt);
+            cpyParticle.setY(cpyParticle.getY() - cpyParticle.getYVelocity() * dt);
+            return cpyParticle;
+        }).collect(Collectors.toList());
+        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, frameParticles, frame, true);
     }
 
     public static void main(String args[]) {

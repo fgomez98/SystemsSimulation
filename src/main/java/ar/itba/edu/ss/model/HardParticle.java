@@ -11,6 +11,16 @@ public class HardParticle extends MovingParticle {
     private double mass;
     private long collisionCount = 0;
 
+    public static HardParticle from(HardParticle hardParticle) {
+        return (HardParticle) new HardParticle.Builder(hardParticle.getId())
+                .withMass(hardParticle.mass)
+                .withAngle(hardParticle.getAngle())
+                .withVelocity(hardParticle.getVelocity())
+                .withRadius(hardParticle.getRadius())
+                .withCoordinates(hardParticle.getX(), hardParticle.getY())
+                .build();
+    }
+
     public static List<HardParticle> generate(List<HardParticle> initialParticles, int size, double lBound, double radius, double aBound, double vBound, double mass) {
         List<HardParticle> particles = new LinkedList<>(initialParticles);
         int i = initialParticles.size();
