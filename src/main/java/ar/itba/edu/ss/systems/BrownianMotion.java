@@ -19,6 +19,7 @@ public class BrownianMotion {
     private static String PDF_VELOCITY_THIRD_FILENAME = "pdf-velocidad-third.txt"; /* TODO: que onda lo del ultimo tercio ??*/
     private static String PDF_VELOCITY_INITIAL_FILENAME = "pdf-velocidad-initial.txt"; /* TODO: que onda lo del ultimo tercio ??*/
     private static String BIG_PARTICLE_TRAJECTORY_FILENAME = "big-particle-trajectory.txt";
+    private static String DCM_PARTICLE_FILENAME = "dcm-particle.txt";
 
     private final double FPS = 10.0; // frames por segundo a usar para la animacion
     private final double SPF = 1.0/ FPS; // seconds per frame
@@ -92,24 +93,44 @@ public class BrownianMotion {
         queue.offer(event);
     }
 
-    public void simulate(double simulationTime) throws IOException {
-        /*
-            TODO: Cell index method para ver con cuales de mis vecinos estoy a distancia 0??, es decir me la puse
-            El sistema es confinad por lo que no hay condicines de controno
-         */
-//        CellIndexMethod cim = new CellIndexMethod(M, L, N, 0, false);
-//        cim.populate(particles);
-//        Map<Particle, Set<Particle>> nearby = cim.cellIndexMethod();
+    public void simulate(double simulationTime, MolecularDinamic.DCM dcm) throws IOException {
+        HardParticle dcmParticle = null;
+        switch (dcm) {
+            case BIGG:
+                dcmParticle = bigParticle;
+                break;
+            case SMALL:
+                dcmParticle = particles.stream().filter(particle ->  !particle.equals(bigParticle)).findAny().get();
+                break;
+            default:
+                // no hay calculo de dcm, dejamos en null dcmParticle
+                break;
+        }
 
+        double dcmTime = 0; /* Distribuimos tiempos cada 1 segundo */
         int frame = 0;
         double time = 0;
+
         IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, particles, frame++, false);
+
+        IOUtils.CSVWrite(DCM_PARTICLE_FILENAME,
+                new LinkedList<>(),
+                (dcmTime++) + ", " + dcmParticle.getX() + ", " + dcmParticle.getY() + "\n",
+                null, // no hay problema ya que no hay datos a aplicar la funcion
+                true);
+
         saveVelocities(initialIterationVelocity);
 
         computeCollisions(time);
 
         while (simulationTime > time) {
             Event event = getNextEvent().get();
+            if (event.getType() == Event.CollisionType.HORIZONTAL_WALL || event.getType() == Event.CollisionType.VERTICAL_WALL) {
+                if (event.getA().get().equals(bigParticle)) {
+                    // se choco contra una pared
+                    break;
+                }
+            }
 
             /* Tiempo del el primer choque o incrementamos en 1 sino hay para redibujar el sistema */
             double tc = event.getTime();
@@ -134,60 +155,24 @@ public class BrownianMotion {
                 ovitoOutputParticles(frame++, time - frame * SPF);
             }
 
+            if (dcmParticle != null) {
+                /* Output de Z(t) y t para la particula dcm elegida */
+                if (time > dcmTime) {
+                    // output en dcmTime
+                    IOUtils.CSVWrite(DCM_PARTICLE_FILENAME,
+                            new LinkedList<>(),
+                            dcmTime + ", " + dcmParticle.getX() + ", " + dcmParticle.getY() + "\n",
+                            null, // no hay problema ya que no hay datos a aplicar la funcion
+                            true);
+                    dcmTime = Math.ceil(time); // redondeamos para arriba hacia el proximo segundo de la simulacion
+                }
+            }
+
             /* Collisionamos */
             COLLISIONS++;
             collide(event, time);
         }
         outputCalculations(simulationTime);
-    }
-
-    public void simulateDCM(double simulationTime, MolecularDinamic.DCM dcm) throws IOException {
-        HardParticle dcmParticle = null;
-
-        switch (dcm) {
-            case BIGG:
-                dcmParticle = bigParticle;
-                break;
-            case SMALL:
-                dcmParticle = particles.stream().filter(particle ->  !particle.equals(bigParticle)).findAny().get();
-                break;
-        }
-
-        double time = 0;
-        double dcmTime = 0;
-        computeCollisions(time);
-
-        /*
-            Solo se deben considerar la segunda mitad de sus trayectorias,
-            teniendo en cuenta que la misma solo es válida hasta que choque con alguna de las paredes.
-         */
-        while (simulationTime > time) {
-            Event event = getNextEvent().get();
-            if (event.getType() == Event.CollisionType.HORIZONTAL_WALL || event.getType() == Event.CollisionType.VERTICAL_WALL) {
-                if (event.getA().get().equals(dcmParticle)) {
-                    // se choco contra una pared
-                    break;
-                }
-            }
-
-            /* Tiempo del el primer choque o incrementamos en 1 sino hay para redibujar el sistema */
-            double tc = event.getTime();
-            double auxTime = tc - time; // --> tiempo entre colsiones
-            collitionTimes.add(auxTime);
-
-            /*  Se evolucionan todas las partículas según sus ecuaciones de movimiento hasta tc */
-            particles.forEach(p -> p.move(auxTime));
-
-            /* Adelantamos el tiempo */
-            time = tc;
-
-            /*
-                 TODO: calculo de Z^2 y output
-            * */
-
-            /* Collisionamos */
-            collide(event, time);
-        }
     }
 
     private void collide(Event event, double currentTime) {
@@ -315,7 +300,7 @@ public class BrownianMotion {
         long start = System.currentTimeMillis();
 
         try {
-            bm.simulate(100);
+            bm.simulate(100, MolecularDinamic.DCM.BIGG);
         } catch (IOException e) {
             e.printStackTrace();
         }

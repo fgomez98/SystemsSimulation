@@ -12,6 +12,11 @@ public class MolecularDinamic {
         BIGG, SMALL
     }
 
+    /*
+        Cambiar la temperatura es cambiar la velocidad inicial, osea la energia cinetica
+        TODO: cambio de velocidad inicial para cambios de temperatura
+    */
+
     @Option(name = "-Dn", usage = "Numero de particulas", forbids = {"-Ddinput", "Dsinput"})
     private int n;
 
@@ -116,11 +121,7 @@ public class MolecularDinamic {
         long startTime = System.currentTimeMillis();
 
         try {
-            if (dcm != null) {
-                brownianMotion.simulateDCM(time, dcm);
-            } else {
-                brownianMotion.simulate(time);
-            }
+            brownianMotion.simulate(time, dcm);
         } catch (IOException e) {
             e.printStackTrace();
         }
