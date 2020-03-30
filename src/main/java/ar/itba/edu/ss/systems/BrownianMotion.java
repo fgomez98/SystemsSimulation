@@ -96,30 +96,29 @@ public class BrownianMotion {
     }
 
     public void simulate(double simulationTime, MolecularDinamic.DCM dcm) throws IOException {
-        HardParticle dcmParticle = null;
-        switch (dcm) {
-            case BIGG:
-                dcmParticle = bigParticle;
-                break;
-            case SMALL:
-                dcmParticle = particles.stream().filter(particle ->  !particle.equals(bigParticle)).findAny().get();
-                break;
-            default:
-                // no hay calculo de dcm, dejamos en null dcmParticle
-                break;
-        }
-
         double dcmTime = 0; /* Distribuimos tiempos cada 1 segundo */
         int frame = 0;
         double time = 0;
 
-        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, particles, frame++, false);
+        HardParticle dcmParticle = null;
+        if (dcm != null) {
+            switch (dcm) {
+                case BIGG:
+                    dcmParticle = bigParticle;
+                    break;
+                case SMALL:
+                    dcmParticle = particles.stream().filter(particle -> !particle.equals(bigParticle)).findAny().get();
+                    break;
+            }
 
-        IOUtils.CSVWrite(DCM_PARTICLE_FILENAME,
-                new LinkedList<>(),
-                (dcmTime++) + ", " + dcmParticle.getX() + ", " + dcmParticle.getY() + "\n",
-                null, // no hay problema ya que no hay datos a aplicar la funcion
-                false);
+            IOUtils.CSVWrite(DCM_PARTICLE_FILENAME,
+                    new LinkedList<>(),
+                    (dcmTime++) + ", " + dcmParticle.getX() + ", " + dcmParticle.getY() + "\n",
+                    null, // no hay problema ya que no hay datos a aplicar la funcion
+                    false);
+        }
+
+        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, particles, frame++, false);
 
         saveVelocities(initialIterationVelocity);
 

@@ -12,7 +12,7 @@ public class MolecularDinamic {
         BIGG, SMALL
     }
 
-    @Option(name = "-Dt", usage = "Modulo de la velociad maximo a usar", forbids = {"-Ddinput", "Dsinput"}, depends={"-Dn"})
+    @Option(name = "-Dv", usage = "Modulo de la velociad maximo a usar", forbids = {"-Ddinput", "Dsinput"}, depends={"-Dn"})
     private double velocity = 0.1;
 
     @Option(name = "-Dn", usage = "Numero de particulas", forbids = {"-Ddinput", "Dsinput"})
