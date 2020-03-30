@@ -33,6 +33,7 @@ public class BrownianMotion {
     private final double M1 = 0.1;
     private final double R2 = 0.05;
     private final double M2 = 100;
+    private double velocityBound;
     private List<Double> collitionTimes;
     /*
      particula -> suma de modulo de velocidades para el ultimo tercio de la simulacion
@@ -57,13 +58,14 @@ public class BrownianMotion {
         this.bigParticleTrayectory = new LinkedList<>();
     }
 
-    public BrownianMotion(int n) {
+    public BrownianMotion(int n, double velocity) {
         this.collitionTimes = new LinkedList<>();
         this.thirdIterationVelocity = new HashMap<>();
         this.initialIterationVelocity = new HashMap<>();
         this.bigParticleTrayectory = new LinkedList<>();
         this.queue = new PriorityQueue<>();
         this.N = n;
+        this.velocityBound = velocity;
         this.M = (int) Math.ceil(L / 2 * Math.max(R1, R2) + 0); // M optimo, criterio: L/M > radio interaccion + 2 * radioMax
         this.bigParticle = (HardParticle) new HardParticle.Builder()
                 .withMass(M2)
@@ -74,7 +76,7 @@ public class BrownianMotion {
                 .build();
         List<HardParticle> initialParticles = new LinkedList<>();
         initialParticles.add(this.bigParticle);
-        this.particles = HardParticle.generate(initialParticles, N - 1, (L - 2 * R2) + R2, R1, 2 * Math.PI, 0.1, M1);
+        this.particles = HardParticle.generate(initialParticles, N - 1, (L - 2 * R2) + R2, R1, 2 * Math.PI, velocityBound, M1);
         try {
             IOUtils.CSVWriteParticles(this.particles, BROWNIAN_MOTION_STATIC_FILENAME, BROWNIAN_MOTION_DINAMIC_FILENAME, this.particles.size(), L);
         } catch (IOException e) {
@@ -117,7 +119,7 @@ public class BrownianMotion {
                 new LinkedList<>(),
                 (dcmTime++) + ", " + dcmParticle.getX() + ", " + dcmParticle.getY() + "\n",
                 null, // no hay problema ya que no hay datos a aplicar la funcion
-                true);
+                false);
 
         saveVelocities(initialIterationVelocity);
 
@@ -294,7 +296,7 @@ public class BrownianMotion {
     }
 
     public static void main(String args[]) {
-        BrownianMotion bm = new BrownianMotion(30);
+        BrownianMotion bm = new BrownianMotion(30, 0.1);
 
         System.out.println("Starting simulation...");
         long start = System.currentTimeMillis();

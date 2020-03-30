@@ -12,10 +12,8 @@ public class MolecularDinamic {
         BIGG, SMALL
     }
 
-    /*
-        Cambiar la temperatura es cambiar la velocidad inicial, osea la energia cinetica
-        TODO: cambio de velocidad inicial para cambios de temperatura
-    */
+    @Option(name = "-Dt", usage = "Modulo de la velociad maximo a usar", forbids = {"-Ddinput", "Dsinput"}, depends={"-Dn"})
+    private double velocity = 0.1;
 
     @Option(name = "-Dn", usage = "Numero de particulas", forbids = {"-Ddinput", "Dsinput"})
     private int n;
@@ -113,7 +111,7 @@ public class MolecularDinamic {
 //            brownianMotion = new BrownianMotion(10);
             return;
         } else {
-            brownianMotion = new BrownianMotion(n);
+            brownianMotion = new BrownianMotion(n, velocity);
         }
 
         System.out.println("Starting simulation...");
