@@ -8,8 +8,6 @@ from matplotlib import pyplot as plt
 N = [100]
 T = [60]
 
-results = [[0.0 for x in range(len(N))] for y in range(len(T))]
-
 for i in range(0, len(T)):
     for j in range(0, len(N)):
         subprocess.call(
@@ -28,12 +26,9 @@ sns.distplot(collisions, hist=True, kde=True,
 plt.title(str(round(collisions_frequency, 3)) + ' colisiones por segundo')
 plt.xlabel('Tiempo entre colisión (s)')
 plt.ylabel('Densidad')
-plt.show()
-
-plt.title(str(round(collisions_frequency, 3)) + ' colisiones por segundo')
-plt.xlabel('Tiempo entre colisión (s)')
-plt.ylabel('Densidad')
-plt.show()
+# plt.show()
+plt.savefig('./Python/graphs/pdf-colisiones.png')
+plt.close()
 
 velocities_third = np.loadtxt("./pdf-velocidad-third.txt", delimiter='\n')
 velocities_third_avg = velocities_third[0]
@@ -48,7 +43,9 @@ sns.distplot(velocities_third, hist=True, kde=True,
 plt.title('Promedio: ' + str(round(velocities_third_avg, 3)) + '(m/s)')
 plt.xlabel('Modulo de la velocidad (m/s)')
 plt.ylabel('Densidad')
-plt.show()
+# plt.show()
+plt.savefig('./Python/graphs/pdf-velocidad-third.png')
+plt.close()
 
 velocities_init = np.loadtxt("./pdf-velocidad-initial.txt", delimiter='\n')
 velocities_init_avg = velocities_init[0]
@@ -63,7 +60,9 @@ sns.distplot(velocities_init, hist=True, kde=True,
 plt.title('Promedio: ' + str(round(velocities_init_avg, 3)) + '(m/s)')
 plt.xlabel('Modulo de la velocidad (m/s)')
 plt.ylabel('Densidad')
-plt.show()
+# plt.show()
+plt.savefig('./Python/graphs/pdf-velocidad-initial.png')
+plt.close()
 
 # creamos el grafico
 fig, ax = plt.subplots()
@@ -87,7 +86,9 @@ ax.legend(shadow=True, fontsize='medium')
 plt.title('Trayectoria de la particula grande')
 plt.xlabel('X')
 plt.ylabel('Y')
-plt.show()
+# plt.show()
+plt.savefig('./Python/graphs/big-particle-trajectory.png')
+plt.close()
 
 dcm_particle = open("./dcm-particle.txt", 'r').readlines()
 length = int(len(dcm_particle) / 2)
