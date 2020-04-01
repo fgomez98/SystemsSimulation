@@ -12,7 +12,7 @@ import java.util.List;
 public class MolecularDinamic {
 
     public static enum DCM {
-        BIGG, SMALL
+        BIG, SMALL
     }
 
     @Option(name = "-Dv", usage = "Modulo de la velociad maximo a usar", forbids = {"-Ddinput", "Dsinput"}, depends = {"-Dn"})

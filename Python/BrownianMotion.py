@@ -13,20 +13,11 @@ results = [[0.0 for x in range(len(N))] for y in range(len(T))]
 for i in range(0, len(T)):
     for j in range(0, len(N)):
         subprocess.call(
-            ['java', '-jar', 'MolecularDinamic-jar-with-dependencies.jar', '-Dt=' + str(T[i]), '-Dn=' + str(N[j])])
+            ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=' + str(T[i]), '-Dn=' + str(N[j])])
 
 collisions = np.loadtxt("./pdf-colisiones.txt", delimiter='\n')
 collisions_frequency = collisions[0]
 collisions = collisions[1:]
-
-# collisions = open('./pdf-colisiones.txt', 'r').read().split('\n')
-# collisions_frequency = float(collisions[0])
-# print(collisions_frequency)
-# collisions = collisions[1:]
-# collisions = [float(line.strip()) for line in collisions if line]
-# print(collisions)
-
-print(collisions)
 
 sns.distplot(collisions, hist=True, kde=True,
              bins=50,
@@ -38,8 +29,6 @@ plt.title(str(round(collisions_frequency, 3)) + ' colisiones por segundo')
 plt.xlabel('Tiempo entre colisión (s)')
 plt.ylabel('Densidad')
 plt.show()
-
-sns.kdeplot(collisions)
 
 plt.title(str(round(collisions_frequency, 3)) + ' colisiones por segundo')
 plt.xlabel('Tiempo entre colisión (s)')
@@ -81,17 +70,20 @@ fig, ax = plt.subplots()
 ax.grid(True)
 plt.axis([0, 0.5, 0, 0.5])
 
-big_particle_data = open('./big-particle-trajectory.txt', 'r').readlines()
+V = [0.1, 0.5, 0.15, 0.25]
 
-size = len(big_particle_data)
-x = []
-y = []
-for line in big_particle_data:
-    position = line.split(',')
-    x.append(float(position[0]))
-    y.append(float(position[1]))
+for i in range(0, len(V)):
+    subprocess.call(['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=120', '-Dn=100'])
+    big_particle_data = open('./big-particle-trajectory.txt', 'r').readlines()
+    x = []
+    y = []
+    for line in big_particle_data:
+        position = line.split(',')
+        x.append(float(position[0]))
+        y.append(float(position[1]))
+    ax.plot(x, y, label='Modulo velocidad maxima='+ str(V[i]))
 
-plt.plot(x, y)
+ax.legend(shadow=True, fontsize='medium')
 plt.title('Trayectoria de la particula grande')
 plt.xlabel('X')
 plt.ylabel('Y')
@@ -99,7 +91,7 @@ plt.show()
 
 dcm_particle = open("./dcm-particle.txt", 'r').readlines()
 length = int(len(dcm_particle) / 2)
-dcm_particle = dcm_particle[0:length]
+dcm_particle = dcm_particle[length:]
 
 #   Z^2 = (x(t)-x(0))^2 + (y(y) -y(0))^2
 # < z2 > = 2 D t    --> D = coeficiente de difusión

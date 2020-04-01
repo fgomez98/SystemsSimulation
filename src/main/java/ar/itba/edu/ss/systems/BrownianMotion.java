@@ -103,7 +103,7 @@ public class BrownianMotion {
         HardParticle dcmParticle = null;
         if (dcm != null) {
             switch (dcm) {
-                case BIGG:
+                case BIG:
                     dcmParticle = bigParticle;
                     break;
                 case SMALL:
@@ -148,6 +148,7 @@ public class BrownianMotion {
                 saveVelocities(thirdIterationVelocity);
                 thirdIterations++;
             }
+
             saveBigParticlePosition(simulationTime, time);
 
             /* Output */
@@ -301,7 +302,7 @@ public class BrownianMotion {
         long start = System.currentTimeMillis();
 
         try {
-            bm.simulate(100, MolecularDinamic.DCM.BIGG);
+            bm.simulate(100, MolecularDinamic.DCM.BIG);
         } catch (IOException e) {
             e.printStackTrace();
         }
