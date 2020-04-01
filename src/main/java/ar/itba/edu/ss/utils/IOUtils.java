@@ -27,6 +27,25 @@ public class IOUtils {
     public static String BROWNIAN_MOTION_DINAMIC_FILENAME = "brownian-motion-dinamic.txt";
     public static String BROWNIAN_MOTION_SIMULATION_FILENAME = "brownian-motion-simulation.xyz";
 
+    public static List<Particle> CSVReadParticles(String staticPath, String dinamicPath, ) throws IOException {
+        CSVReader staticReader = new CSVReader(new FileReader(staticPath), ' ');
+        CSVReader dinamicReader = new CSVReader(new FileReader(dinamicPath), ' ');
+        List<Particle> resp = new ArrayList<>();
+        String[] staticNextLine;
+        String[] dinamicNextLine;
+        staticReader.readNext();
+        staticReader.readNext(); // leemos N y L
+        dinamicReader.readNext(); // leemos el tiempo To
+        long id = 0;
+        while ((staticNextLine = staticReader.readNext()) != null && (dinamicNextLine = dinamicReader.readNext()) != null) {
+            resp.add(new Particle.Builder(id++).
+                    withCoordinates(Double.parseDouble(dinamicNextLine[0]), Double.parseDouble(dinamicNextLine[1]))
+                    .withRadius(Double.parseDouble(staticNextLine[0]))
+                    .build());
+        }
+        return resp;
+    }
+
     public static List<Particle> CSVReadParticles(String staticPath, String dinamicPath) throws IOException {
         CSVReader staticReader = new CSVReader(new FileReader(staticPath), ' ');
         CSVReader dinamicReader = new CSVReader(new FileReader(dinamicPath), ' ');

@@ -38,6 +38,24 @@ public class HardParticle extends MovingParticle {
         return particles;
     }
 
+    public static HardParticle from(long id, String[] staticNextLine, String[] dinamicNextLine) {
+        double x = Double.parseDouble(dinamicNextLine[0]);
+        double y = Double.parseDouble(dinamicNextLine[1]);
+        double vx = Double.parseDouble(dinamicNextLine[2]);
+        double vy = Double.parseDouble(dinamicNextLine[3]);
+        double radius = Double.parseDouble(staticNextLine[0]);
+        double mass = Double.parseDouble(staticNextLine[1]);
+        double angle = Math.atan2(vy, vx);
+        double velocity = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
+        return (HardParticle) new HardParticle.Builder(id)
+                .withMass(mass)
+                .withAngle(angle)
+                .withVelocity(velocity)
+                .withRadius(radius)
+                .withCoordinates(x, y)
+                .build();
+    }
+
     /*
         Paredes verticlaes
         Sean xp1 < xp2 las coordenadas de las paredes verticales.
