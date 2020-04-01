@@ -1,10 +1,13 @@
 package ar.itba.edu.ss;
 
+import ar.itba.edu.ss.model.HardParticle;
 import ar.itba.edu.ss.systems.BrownianMotion;
 import ar.itba.edu.ss.utils.CmdParserUtils;
+import ar.itba.edu.ss.utils.IOUtils;
 import org.kohsuke.args4j.Option;
 
 import java.io.IOException;
+import java.util.List;
 
 public class MolecularDinamic {
 
@@ -12,15 +15,14 @@ public class MolecularDinamic {
         BIGG, SMALL
     }
 
-    @Option(name = "-Dv", usage = "Modulo de la velociad maximo a usar", forbids = {"-Ddinput", "Dsinput"}, depends={"-Dn"})
+    @Option(name = "-Dv", usage = "Modulo de la velociad maximo a usar", forbids = {"-Ddinput", "Dsinput"}, depends = {"-Dn"})
     private double velocity = 0.1;
 
     @Option(name = "-Dn", usage = "Numero de particulas", forbids = {"-Ddinput", "Dsinput"})
-    private int n;
+    private int n = 100;
 
     @Option(name = "-Dt", usage = "Tiempo a simular", required = true)
     private int time;
-
 
     @Option(name = "-Ddcm", usage = "Coeficiente de difusión de la partícula")
     private DCM dcm;
@@ -82,34 +84,15 @@ public class MolecularDinamic {
         BrownianMotion brownianMotion = null;
 
         if (staticInputFilename != null && dinamicInputFilename != null) {
-//
-////            TODO: read de particulas autonomas (hacer le metodo read generico para ambas)
-//
-//            List<MovingParticle> data = null;
-//            try {
-//                data = IOUtils.CSVReadMovingParticles(staticInputFilename, dinamicInputFilename);
-//            } catch (Exception e) {
-//                System.err.println("An error has been encountered while reading input file");
-//                System.exit(1);
-//            }
-//
-//        /*
-//            Necesitamos conocer el N y L pasado en el archivo estatico
-//         */
-//
-//            Scanner params = null;
-//            try {
-//                params = new Scanner(new File(staticInputFilename));
-//            } catch (FileNotFoundException e) {
-//                System.err.println("An error has been encountered while reading input file");
-//                System.exit(1);
-//            }
-//
-//            int n = params.nextInt(); // leemos el N pasado por el archivo estatico
-//            double l = params.nextDouble(); // leemos el L pasado por el archivo estatico
-//
-//            brownianMotion = new BrownianMotion(10);
-            return;
+            List<HardParticle> data = null;
+            try {
+                data = (List<HardParticle>) IOUtils.CSVReadParticles(staticInputFilename, dinamicInputFilename, HardParticle::read);
+            } catch (Exception e) {
+                System.err.println("An error has been encountered while reading input file");
+                System.exit(1);
+            }
+
+            brownianMotion = new BrownianMotion(data);
         } else {
             brownianMotion = new BrownianMotion(n, velocity);
         }
