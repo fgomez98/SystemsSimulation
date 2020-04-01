@@ -38,7 +38,7 @@ public class HardParticle extends MovingParticle {
         return particles;
     }
 
-    public static HardParticle from(long id, String[] staticNextLine, String[] dinamicNextLine) {
+    public static HardParticle read(long id, String[] staticNextLine, String[] dinamicNextLine) {
         double x = Double.parseDouble(dinamicNextLine[0]);
         double y = Double.parseDouble(dinamicNextLine[1]);
         double vx = Double.parseDouble(dinamicNextLine[2]);
