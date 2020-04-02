@@ -131,6 +131,11 @@ mean_t = np.mean(t, axis=0)
 
 plt.errorbar(mean_t, mean_z, yerr=std_z, fmt='-o')
 
+# modelo = linear_model.LinearRegression()
+# modelo.fit(mean_t, mean_z)
+# y_pred = modelo.predict(mean_t)
+# plt.plot(x, y_pred, color='red')
+
 plt.title("Va en funcion del rudio")
 plt.ylabel('Desplazamiento cuadrático (m^2)')
 plt.xlabel('Tiempo (s)')
