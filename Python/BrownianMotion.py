@@ -14,8 +14,6 @@ for i in range(0, len(T)):
             ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=' + str(T[i]), '-Dn=' + str(N[j])])
 
 collisions = np.loadtxt("./pdf-colisiones.txt", delimiter='\n')
-collisions_frequency = collisions[0]
-collisions = collisions[1:]
 
 sns.distplot(collisions, hist=True, kde=True,
              bins=50,
@@ -23,7 +21,7 @@ sns.distplot(collisions, hist=True, kde=True,
              hist_kws={'edgecolor': 'black'},
              kde_kws={'linewidth': 2}).set(xlim=(0))
 
-plt.title(str(round(collisions_frequency, 3)) + ' colisiones por segundo')
+plt.title('Frecuencia: '+ str(round(len(collisions) / T[0], 3)) + ' colisiones por segundo, Promedio: ' + str(round(np.average(collisions), 3)) + '(s)')
 plt.xlabel('Tiempo entre colisión (s)')
 plt.ylabel('Densidad')
 # plt.show()
@@ -31,8 +29,6 @@ plt.savefig('./Python/graphs/pdf-colisiones.png')
 plt.close()
 
 velocities_third = np.loadtxt("./pdf-velocidad-third.txt", delimiter='\n')
-velocities_third_avg = velocities_third[0]
-velocities_third = velocities_third[1:]
 
 sns.distplot(velocities_third, hist=True, kde=True,
              bins=50,
@@ -40,7 +36,7 @@ sns.distplot(velocities_third, hist=True, kde=True,
              hist_kws={'edgecolor': 'black'},
              kde_kws={'linewidth': 2}).set(xlim=(0))
 
-plt.title('Promedio: ' + str(round(velocities_third_avg, 3)) + '(m/s)')
+plt.title('Promedio: ' + str(round(np.average(velocities_third), 3)) + '(m/s)')
 plt.xlabel('Modulo de la velocidad (m/s)')
 plt.ylabel('Densidad')
 # plt.show()
@@ -48,8 +44,6 @@ plt.savefig('./Python/graphs/pdf-velocidad-third.png')
 plt.close()
 
 velocities_init = np.loadtxt("./pdf-velocidad-initial.txt", delimiter='\n')
-velocities_init_avg = velocities_init[0]
-velocities_init = velocities_init[1:]
 
 sns.distplot(velocities_init, hist=True, kde=True,
              bins=50,
@@ -57,7 +51,7 @@ sns.distplot(velocities_init, hist=True, kde=True,
              hist_kws={'edgecolor': 'black'},
              kde_kws={'linewidth': 2}).set(xlim=(0))
 
-plt.title('Promedio: ' + str(round(velocities_init_avg, 3)) + '(m/s)')
+plt.title('Promedio: ' + str(round(np.average(velocities_init), 3)) + '(m/s)')
 plt.xlabel('Modulo de la velocidad (m/s)')
 plt.ylabel('Densidad')
 # plt.show()
@@ -69,7 +63,7 @@ fig, ax = plt.subplots()
 ax.grid(True)
 plt.axis([0, 0.5, 0, 0.5])
 
-V = [0.1, 0.5, 0.15, 0.25]
+V = [0.1, 0.15, 0.25, 0.5]
 
 for i in range(0, len(V)):
     subprocess.call(['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=120', '-Dn=100'])

@@ -118,7 +118,7 @@ public class BrownianMotion {
                     false);
         }
 
-        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, particles, frame++, false);
+        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, addCornerParticles(particles), frame++, false);
 
         saveVelocities(initialIterationVelocity);
 
@@ -243,23 +243,19 @@ public class BrownianMotion {
     private void outputCalculations(double simulationTime) throws IOException {
         IOUtils.CSVWrite(PDF_COLLISIONS_FILENAME,
                 collitionTimes,
-                collitionTimes.size() / simulationTime + "\n\n",
+                "",
                 time -> time + "\n",
                 false);
 
-        Double initialVelocitySum = initialIterationVelocity.entrySet().stream().reduce(0.0, (acc, entry) -> entry.getValue() + acc, Double::sum);
-
         IOUtils.CSVWrite(PDF_VELOCITY_INITIAL_FILENAME,
                 initialIterationVelocity.values(),
-                initialVelocitySum / (double) initialIterationVelocity.size() + "\n\n",
+                "",
                 velocity -> velocity + "\n",
                 false);
 
-        Double thirdIterationVelocitySum = thirdIterationVelocity.entrySet().stream().reduce(0.0, (acc, entry) -> (entry.getValue() / (double) thirdIterations) + acc, Double::sum);
-
         IOUtils.CSVWrite(PDF_VELOCITY_THIRD_FILENAME,
                 thirdIterationVelocity.values(),
-                thirdIterationVelocitySum / (double) thirdIterationVelocity.size() + "\n\n",
+                "",
                 velocity -> velocity / (double) thirdIterations + "\n",
                 false);
 
@@ -292,7 +288,30 @@ public class BrownianMotion {
             cpyParticle.setY(cpyParticle.getY() - cpyParticle.getYVelocity() * dt);
             return cpyParticle;
         }).collect(Collectors.toList());
-        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME, frameParticles, frame, true);
+        IOUtils.ovitoOutputParticles(BROWNIAN_MOTION_SIMULATION_FILENAME,
+                addCornerParticles(frameParticles),
+                frame,
+                true);
+    }
+
+    private List<HardParticle> addCornerParticles(List<HardParticle> particles) {
+        /*
+            Agregamos particulas de radio MUY pequeño en los bordes para que ovito mantenga fijo el simulation cell
+        */
+        List<HardParticle> auxList = new LinkedList<>(particles);
+        long maxId = auxList.stream().max(Comparator.comparingLong(HardParticle::getId)).get().getId();
+        Double[] x = {0.0, 0.0, L, L};
+        Double[] y = {L, 0.0, L, 0.0};
+        for (int i = 0; i < 4; i++) {
+            auxList.add((HardParticle) new HardParticle.Builder(maxId + 1 + i)
+                    .withMass(0)
+                    .withAngle(0)
+                    .withVelocity(0)
+                    .withRadius(0.00001)
+                    .withCoordinates(x[i], y[i])
+                    .build());
+        }
+        return auxList;
     }
 
     public static void main(String args[]) {
