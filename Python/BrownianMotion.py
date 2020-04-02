@@ -5,6 +5,8 @@ from scipy import stats
 import seaborn as sns
 from matplotlib import pyplot as plt
 import scipy.constants
+from sklearn import linear_model
+
 
 N = [100]
 T = [60]
@@ -12,7 +14,8 @@ T = [60]
 for i in range(0, len(T)):
     for j in range(0, len(N)):
         subprocess.call(
-            ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=' + str(T[i]), '-Dn=' + str(N[j])])
+            ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=' + str(T[i]),
+             '-Dn=' + str(N[j])])
 
 collisions = np.loadtxt("./pdf-colisiones.txt", delimiter='\n')
 
@@ -22,7 +25,8 @@ sns.distplot(collisions, hist=True, kde=True,
              hist_kws={'edgecolor': 'black'},
              kde_kws={'linewidth': 2}).set(xlim=(0))
 
-plt.title('Frecuencia: '+ str(round(len(collisions) / T[0], 3)) + ' colisiones por segundo, Promedio: ' + str(round(np.average(collisions), 3)) + '(s)')
+plt.title('Frecuencia: ' + str(round(len(collisions) / T[0], 3)) + ' colisiones por segundo, Promedio: ' + str(
+    round(np.average(collisions), 3)) + '(s)')
 plt.xlabel('Tiempo entre colisión (s)')
 plt.ylabel('Densidad')
 # plt.show()
@@ -77,7 +81,8 @@ for i in range(0, len(V)):
     for j in range(0, len(static_data)):
         dinamic = dinamic_data[j].split(' ')
         static = static_data[j].split(' ')
-        temp += ((float(dinamic[2])**2 + float(dinamic[3])**2) * (float(static[1])/1000)) / scipy.constants.physical_constants["Boltzmann constant"][0]  # paso a kg la masa
+        temp += ((float(dinamic[2]) ** 2 + float(dinamic[3]) ** 2) * (float(static[1]) / 1000)) / \
+                scipy.constants.physical_constants["Boltzmann constant"][0]  # paso a kg la masa
     x = []
     y = []
     print(temp)
@@ -85,7 +90,7 @@ for i in range(0, len(V)):
         position = line.split(',')
         x.append(float(position[0]))
         y.append(float(position[1]))
-    ax.plot(x, y, label='Modulo velocidad maxima='+ str(V[i]))
+    ax.plot(x, y, label='Modulo velocidad maxima=' + str(V[i]))
 
 ax.legend(shadow=True, fontsize='medium')
 plt.title('Trayectoria de la particula grande')
@@ -95,27 +100,38 @@ plt.ylabel('Y')
 plt.savefig('./Python/graphs/big-particle-trajectory.png')
 plt.close()
 
-dcm_particle = open("./dcm-particle.txt", 'r').readlines()
-length = int(len(dcm_particle) / 2)
-dcm_particle = dcm_particle[length:]
+simulations = 10
+z = [[] for j in range(simulations)]
+t = [[] for j in range(simulations)]
 
-#   Z^2 = (x(t)-x(0))^2 + (y(y) -y(0))^2
-# < z2 > = 2 D t    --> D = coeficiente de difusión
-position = dcm_particle[0].split(', ')
-x0 = float(position[1])
-y0 = float(position[2])
-t = []
-z = []
-for line in dcm_particle:
-    position = line.split(', ')
-    t.append(float(position[0]))
-    x_aux = float(position[1]) - x0
-    y_aux = float(position[2]) - y0
-    res = pow(x_aux, 2) + pow(y_aux, 2)
-    z.append(res)
+for i in range(0, simulations):
+    subprocess.call(
+        ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=120', '-Dn=100', '-Ddcm=BIG'])
+    dcm_particle = open("./dcm-particle.txt", 'r').readlines()
+    length = int(len(dcm_particle) / 2)
+    dcm_particle = dcm_particle[length:]
+    #   Z^2 = (x(t)-x(0))^2 + (y(y) -y(0))^2
+    # < z2 > = 2 D t    --> D = coeficiente de difusión
+    position = dcm_particle[0].split(', ')
+    x0 = float(position[1])
+    y0 = float(position[2])
+    t_aux = t[i]
+    z_aux = z[i]
+    for line in dcm_particle:
+        position = line.split(', ')
+        t_aux.append(float(position[0]))
+        x_aux = float(position[1]) - x0
+        y_aux = float(position[2]) - y0
+        res = pow(x_aux, 2) + pow(y_aux, 2)
+        z_aux.append(res)
 
-plt.plot(t, z)
-plt.title('DCM: ' + str(sum(z) / len(t)))
-plt.xlabel('Tiempo (s)')
+mean_z = np.mean(z, axis=0)
+std_z = np.std(z, axis=0)
+mean_t = np.mean(t, axis=0)
+
+plt.errorbar(mean_t, mean_z, yerr=std_z, fmt='-o')
+
+plt.title("Va en funcion del rudio")
 plt.ylabel('Desplazamiento cuadrático (m^2)')
+plt.xlabel('Tiempo (s)')
 plt.show()
