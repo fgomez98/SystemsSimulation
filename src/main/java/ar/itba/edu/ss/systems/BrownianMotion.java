@@ -144,7 +144,7 @@ public class BrownianMotion {
             /* Adelantamos el tiempo */
             time = tc;
 
-            if (time < ((1 / 3.0) * simulationTime)) { // último tercio de la simulación
+            if (time > ((2 / 3.0) * simulationTime)) { // último tercio de la simulación
                 saveVelocities(thirdIterationVelocity);
                 thirdIterations++;
             }

@@ -4,6 +4,7 @@ import scipy
 from scipy import stats
 import seaborn as sns
 from matplotlib import pyplot as plt
+import scipy.constants
 
 N = [100]
 T = [60]
@@ -68,8 +69,18 @@ V = [0.1, 0.15, 0.25, 0.5]
 for i in range(0, len(V)):
     subprocess.call(['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=120', '-Dn=100'])
     big_particle_data = open('./big-particle-trajectory.txt', 'r').readlines()
+    static_data = open('./brownian-motion-static.txt', 'r').readlines()
+    dinamic_data = open('./brownian-motion-dinamic.txt', 'r').readlines()
+    dinamic_data = dinamic_data[1:]
+    static_data = static_data[2:]
+    temp = 0.0
+    for j in range(0, len(static_data)):
+        dinamic = dinamic_data[j].split(' ')
+        static = static_data[j].split(' ')
+        temp += ((float(dinamic[2])**2 + float(dinamic[3])**2) * (float(static[1])/1000)) / scipy.constants.physical_constants["Boltzmann constant"][0]  # paso a kg la masa
     x = []
     y = []
+    print(temp)
     for line in big_particle_data:
         position = line.split(',')
         x.append(float(position[0]))
