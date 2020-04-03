@@ -1,12 +1,12 @@
 import subprocess
 import numpy as np
-import scipy
-from scipy import stats
+import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 import scipy.constants
 from sklearn import linear_model
 
+##....................................PDF COLISIONES....................................
 
 N = [100]
 T = [60]
@@ -33,6 +33,8 @@ plt.ylabel('Densidad')
 plt.savefig('./Python/graphs/pdf-colisiones.png')
 plt.close()
 
+##....................................PDF VELOCIDADES ULTIMO TERCIO....................................
+
 velocities_third = np.loadtxt("./pdf-velocidad-third.txt", delimiter='\n')
 
 sns.distplot(velocities_third, hist=True, kde=True,
@@ -48,6 +50,8 @@ plt.ylabel('Densidad')
 plt.savefig('./Python/graphs/pdf-velocidad-third.png')
 plt.close()
 
+##....................................PDF VELOCIDADES INICIAL....................................
+
 velocities_init = np.loadtxt("./pdf-velocidad-initial.txt", delimiter='\n')
 
 sns.distplot(velocities_init, hist=True, kde=True,
@@ -62,6 +66,8 @@ plt.ylabel('Densidad')
 # plt.show()
 plt.savefig('./Python/graphs/pdf-velocidad-initial.png')
 plt.close()
+
+##....................................TRAYECTORIA PARTICULA GRANDE....................................
 
 # creamos el grafico
 fig, ax = plt.subplots()
@@ -81,11 +87,10 @@ for i in range(0, len(V)):
     for j in range(0, len(static_data)):
         dinamic = dinamic_data[j].split(' ')
         static = static_data[j].split(' ')
-        temp += ((float(dinamic[2]) ** 2 + float(dinamic[3]) ** 2) * (float(static[1]) / 1000)) / \
-                scipy.constants.physical_constants["Boltzmann constant"][0]  # paso a kg la masa
+        temp += ((float(dinamic[2]) ** 2 + float(dinamic[3]) ** 2) * (2 * float(static[1]) / 1000)) / scipy.constants.physical_constants["Boltzmann constant"][0]  # paso a kg la masa
     x = []
     y = []
-    print(temp)
+    # print(temp)
     for line in big_particle_data:
         position = line.split(',')
         x.append(float(position[0]))
@@ -93,12 +98,13 @@ for i in range(0, len(V)):
     ax.plot(x, y, label='Modulo velocidad maxima=' + str(V[i]))
 
 ax.legend(shadow=True, fontsize='medium')
-plt.title('Trayectoria de la particula grande')
 plt.xlabel('X')
 plt.ylabel('Y')
 # plt.show()
 plt.savefig('./Python/graphs/big-particle-trajectory.png')
 plt.close()
+
+##....................................DCM BIG....................................
 
 simulations = 10
 z = [[] for j in range(simulations)]
@@ -106,7 +112,7 @@ t = [[] for j in range(simulations)]
 
 for i in range(0, simulations):
     subprocess.call(
-        ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=120', '-Dn=100', '-Ddcm=BIG'])
+        ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=120', '-Dn=100', '-Ddcm=big'])
     dcm_particle = open("./dcm-particle.txt", 'r').readlines()
     length = int(len(dcm_particle) / 2)
     dcm_particle = dcm_particle[length:]
@@ -125,18 +131,71 @@ for i in range(0, simulations):
         res = pow(x_aux, 2) + pow(y_aux, 2)
         z_aux.append(res)
 
-mean_z = np.mean(z, axis=0)
-std_z = np.std(z, axis=0)
-mean_t = np.mean(t, axis=0)
+mean_z = np.mean(np.array(z), axis=0)
+std_z = np.std(np.array(z), axis=0)
+mean_t = np.mean(np.array(t), axis=0)
 
-plt.errorbar(mean_t, mean_z, yerr=std_z, fmt='-o')
+plt.errorbar(mean_t, mean_z, yerr=std_z, fmt='-o', label='<z²>')
 
-# modelo = linear_model.LinearRegression()
-# modelo.fit(mean_t, mean_z)
-# y_pred = modelo.predict(mean_t)
-# plt.plot(x, y_pred, color='red')
-
-plt.title("Va en funcion del rudio")
-plt.ylabel('Desplazamiento cuadrático (m^2)')
+dz = pd.DataFrame(mean_z)
+dt = pd.DataFrame(mean_t)
+lm = linear_model.LinearRegression()
+lm = lm.fit(dt, dz)
+predictions = lm.predict(dt)
+print(predictions)
+plt.plot(dt, predictions, color='red', label='0 = 2Dt - <z²>')
+plt.title('Coeficiente de Difusión: ' + format((lm.coef_[0][0] / 2.0), '.3g') + "(m²/s)")
+plt.ylabel('Desplazamiento cuadrático (m²)')
 plt.xlabel('Tiempo (s)')
-plt.show()
+plt.legend(loc='best', shadow=True, fontsize='medium')
+# plt.show()
+plt.savefig('./Python/graphs/big-particle-dcm.png')
+plt.close()
+
+##....................................DCM SMALL....................................
+
+simulations = 10
+z = [[] for j in range(simulations)]
+t = [[] for j in range(simulations)]
+
+for i in range(0, simulations):
+    subprocess.call(
+        ['java', '-jar', './target/MolecularDinamic-jar-with-dependencies.jar', '-Dt=120', '-Dn=100', '-Ddcm=small'])
+    dcm_particle = open("./dcm-particle.txt", 'r').readlines()
+    length = int(len(dcm_particle) / 2)
+    dcm_particle = dcm_particle[length:]
+    #   Z^2 = (x(t)-x(0))^2 + (y(y) -y(0))^2
+    # < z2 > = 2 D t    --> D = coeficiente de difusión
+    position = dcm_particle[0].split(', ')
+    x0 = float(position[1])
+    y0 = float(position[2])
+    t_aux = t[i]
+    z_aux = z[i]
+    for line in dcm_particle:
+        position = line.split(', ')
+        t_aux.append(float(position[0]))
+        x_aux = float(position[1]) - x0
+        y_aux = float(position[2]) - y0
+        res = pow(x_aux, 2) + pow(y_aux, 2)
+        z_aux.append(res)
+
+mean_z = np.mean(np.array(z), axis=0)
+std_z = np.std(np.array(z), axis=0)
+mean_t = np.mean(np.array(t), axis=0)
+
+plt.errorbar(mean_t, mean_z, yerr=std_z, fmt='-o', label='<z²>')
+
+dz = pd.DataFrame(mean_z)
+dt = pd.DataFrame(mean_t)
+lm = linear_model.LinearRegression()
+lm = lm.fit(dt, dz)
+predictions = lm.predict(dt)
+print(predictions)
+plt.plot(dt, predictions, color='red', label='0 = 2Dt - <z²>')
+plt.title('Coeficiente de Difusión: ' + format((lm.coef_[0][0] / 2.0), '.3g') + "(m²/s)")
+plt.ylabel('Desplazamiento cuadrático (m²)')
+plt.xlabel('Tiempo (s)')
+plt.legend(loc='best', shadow=True, fontsize='medium')
+# plt.show()
+plt.savefig('./Python/graphs/small-particle-dcm.png')
+plt.close()
