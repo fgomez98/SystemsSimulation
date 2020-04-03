@@ -1,5 +1,5 @@
-# ss-tp2
-Trabajo Practico #2
+# ss-tp3
+Trabajo Practico #3
 
 ### Instrucciones
 Situarse en la raiz y ejecutar los comandos segun corresponda
@@ -12,15 +12,14 @@ mvn clean install
 #### Ejecución
 Otorgar permisos de ejecución en caso de ser necesario
 ```
-chmod 777 ./run-off-latice.sh 
+chmod 777 ./brownian-motion.sh.sh 
 ``` 
-Para correr las simulacion correr el siguiente comando con los parametros deseados 
-Los parametros Dsinput , Ddinput son opcionales.
+Para correr la simulacion correr el siguiente comando con los parametros deseados 
 ```
-./run-off-latice.sh -Dt=[iteraciones] -Dr=[amplitud de ruido]  -Dn=[numero de particulas] -Dl=[longitud] -Dsinput=[Archivo estatico] -Ddinput=[Archivo dinamico]
+./run-off-latice.sh -Dt=[tiempo de simulacion] -Dn=[numero de particulas] -Dv=[veocidad maxima en modulo] -Dsinput=[archivo estatico] -Ddinput=[archivo dinamico]
 ```
 
-La simulacion sera guardada en el archivo "off-latice-simulation.xyz"
-Las condiciones iniciales generadas, en caso de no haber sido pasadas por parametro, son guardadas en los archivos "off-latice-static.txt" y "off-latice-dinamic.txt"
+La simulacion sera guardada en el archivo "brownian-motion-simulation.xyz"
+Las condiciones iniciales generadas, en caso de no haber sido pasadas por parametro, son guardadas en los archivos "brownian-motion-static.txt" y "brownian-motion-dinamic.txt"
 
 
