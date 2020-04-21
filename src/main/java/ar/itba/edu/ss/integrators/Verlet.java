@@ -16,7 +16,7 @@ public class Verlet implements Integration {
     }
 
     @Override
-    public void calculate(HardParticle particle, double dt) {
+    public HardParticle calculate(HardParticle particle, double dt) {
         double rx = particle.getX() + (dt * particle.getXVelocity()) + (((dt * dt) / particle.getMass()) * force.getX(particle));
         double ry = particle.getY() + (dt * particle.getYVelocity()) + (((dt * dt) / particle.getMass()) * force.getY(particle));
 
@@ -28,5 +28,7 @@ public class Verlet implements Integration {
 
         particle.setCoordinates(rx, ry);
         particle.setVelocity(vx, vy);
+
+        return (HardParticle) new HardParticle.Builder().withMass(particle.getMass()).withVelocity(vx, vy).withCoordinates(rx, ry).build();
     }
 }

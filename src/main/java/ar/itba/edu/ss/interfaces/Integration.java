@@ -4,5 +4,5 @@ import ar.itba.edu.ss.model.HardParticle;
 
 public interface Integration {
 
-    void calculate(HardParticle particle, double dt);
+    HardParticle calculate(HardParticle particle, double dt);
 }

@@ -11,4 +11,6 @@ public interface Force {
     double getX(double[] r, double[] v);
 
     double getY(double[] r, double[] v);
+
+    boolean isVelocitydependant();
 }
