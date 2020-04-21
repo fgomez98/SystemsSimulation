@@ -20,6 +20,7 @@ public class Verlet implements Integration {
         double rx = particle.getX() + (dt * particle.getXVelocity()) + (((dt * dt) / particle.getMass()) * force.getX(particle));
         double ry = particle.getY() + (dt * particle.getYVelocity()) + (((dt * dt) / particle.getMass()) * force.getY(particle));
 
+        // todo: usar predictor de euler 
         double vx_aux = particle.getXVelocity() + ((dt / (2 * particle.getMass())) * force.getX(particle));
         double vy_aux = particle.getYVelocity() + ((dt / (2 * particle.getMass())) * force.getY(particle));
 
