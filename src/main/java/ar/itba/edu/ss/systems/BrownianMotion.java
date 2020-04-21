@@ -154,7 +154,8 @@ public class BrownianMotion {
             /* Output */
             int currentFrame = (int) Math.floor(time / SPF);
             while (frame < currentFrame) {
-                ovitoOutputParticles(frame++, time - frame * SPF);
+                ovitoOutputParticles(frame, time - frame * SPF);
+                frame++;
             }
 
             if (dcmParticle != null) {

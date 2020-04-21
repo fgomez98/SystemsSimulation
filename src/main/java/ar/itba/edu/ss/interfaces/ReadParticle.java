@@ -1,4 +1,4 @@
-package ar.itba.edu.ss.utils;
+package ar.itba.edu.ss.interfaces;
 
 import ar.itba.edu.ss.model.Particle;
 

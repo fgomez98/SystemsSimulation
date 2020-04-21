@@ -1,5 +1,6 @@
 package ar.itba.edu.ss.utils;
 
+import ar.itba.edu.ss.interfaces.ReadParticle;
 import ar.itba.edu.ss.model.MovingParticle;
 import ar.itba.edu.ss.model.Particle;
 import com.opencsv.CSVReader;
