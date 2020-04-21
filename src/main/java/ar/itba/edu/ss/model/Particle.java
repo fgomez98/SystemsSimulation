@@ -44,6 +44,15 @@ public class Particle {
         this.y = y;
     }
 
+    /*
+        Mutable solo si necesito para optimizar
+     */
+
+    public void setCoordinates(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
     protected void setId(long id) {
         this.id = id;
     }

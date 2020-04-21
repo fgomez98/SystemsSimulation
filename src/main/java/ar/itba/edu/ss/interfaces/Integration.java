@@ -1,8 +1,8 @@
 package ar.itba.edu.ss.interfaces;
 
-import ar.itba.edu.ss.model.Particle;
+import ar.itba.edu.ss.model.HardParticle;
 
 public interface Integration {
 
-    void calculate(Particle particle, double dt);
+    void calculate(HardParticle particle, double dt);
 }
