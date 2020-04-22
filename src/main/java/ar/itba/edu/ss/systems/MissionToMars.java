@@ -36,51 +36,48 @@ public class MissionToMars {
     private double time = 0;
     private int initialSpeed1 = 8;      /* 8 km/hr */
     private int initialSpeed2 = 13;      /* 13 km/hr */
-    private boolean missionComplete = false;
     private Calendar calendar;
 
     private static String FUTURE_ARRIVAL = "future-arrival.txt";
     private static String TIME_OF_TRIP = "time-of-trip.txt";
     private static String FINAL_SPEED = "final-speed.txt";
 
-    public MissionToMars(double dt) {
-        this.dt = dt;
-        this.dt2 = dt * STATE_K;
+    public MissionToMars (double dt, int spaceshipSpeed) {
 
-        calendar = new GregorianCalendar(2020, 06, 04);
-
-        initPlanets();
-    }
-
-    private void initPlanets() {
-        /* sacamos las condiciones iniciales del link  https://ssd.jpl.nasa.gov/horizons.cgi#top al día 06/04 */
+        /* sacamos las condiciones iniciales del link  https://ssd.jpl.nasa.gov/horizons.cgi#top al día 06/04
+        * UNIDADES
+        *   Posición en km
+            Velocidad en km/s
+            Peso en kg
+            Radio en km
+        * */
 
         /* MARTE */
         /*
             radio 3389.92+-0.04 km
             Mass x10^23 (kg)      =    6.4171
-            X =-1.697831879172063E-01 Y =-1.452533227422469E+00     TODO: unidades?
-            VX= 1.442541741631660E-02 VY=-3.732586868630861E-04     TODO: unidades?
+            X =-1.697831879172063E-01 Y =-1.452533227422469E+00         AU
+            VX= 1.442541741631660E-02 VY=-3.732586868630861E-04         AU/DAY
          */
         mars = (HardParticle) new HardParticle.Builder()
                 .withMass(6.4171E23)
-                .withVelocity(1.442541741631660E-02, -3.732586868630861E-04)
+                .withVelocity(24.976987609255310474, -0.64628130526615434892)
                 .withRadius(3389.92)
-                .withCoordinates(-1.697831879172063E-01, -1.452533227422469E+00)
+                .withCoordinates(-25399203.393072031438, -217295877.94340020418)
                 .build();
 
         /* TIERRA */
         /*
             radio 6371.01+-0.02 km
             Mass x10^24 (kg)= 5.97219+-0.0006
-            X =-9.646530350221529E-01 Y =-2.750306360859890E-01     TODO: unidades?
-            VX= 4.564771838790553E-03 VY=-1.656625701516261E-02     TODO: unidades?
+            X =-9.646530350221529E-01 Y =-2.750306360859890E-01
+            VX= 4.564771838790553E-03 VY=-1.656625701516261E-02
          */
         earth = (HardParticle) new HardParticle.Builder()
                 .withMass(5.97219E24)
-                .withVelocity(4.564771838790553E-03, -1.656625701516261E-02)
+                .withVelocity(7.9037054087313700634, -28.683758969181297971)
                 .withRadius(6371.01)
-                .withCoordinates(-9.646530350221529E-01, -2.750306360859890E-01)
+                .withCoordinates(-144310040.00360658765, -41143997.535730540752)
                 .build();
 
         /* SOL */
@@ -94,22 +91,19 @@ public class MissionToMars {
                 .withRadius(695700)
                 .withCoordinates(0, 0).build();
 
-        /* TODO: radio?
-         * TODO: velocidad inicial 8 km por hora. tangente a la orbita de la tierra
-         *       + velocidad orbital respecto de la tierra es de 7,12 km/s
-         * TODO: coordenadas: a 1500 km de la tierra (alineado con el sol)
-         * */
-        /* 1500^2 = x^2 + y^2 con x = y --> 1500^2 = 2*x^2 '--> x = 1500/2^(1/2) */
-        double distance = 1500 / Math.sqrt(2);
+
         spaceship = (HardParticle) new HardParticle.Builder()
                 .withMass(2E5)
-                .withVelocity(-8.200470787101123E-06, -2.915722838615252E-06)
-                .withCoordinates(-9.646530350221529E-01 + distance, -2.750306360859890E-01 + distance)
+                .withRadius(0.2)     /* a nuestro criterio */
                 .build();
 
-        /* Metodos de integracion, la nave no va posicionada aun */
-        bodies = new HashSet<>();
-        integrationMap = new HashMap<>();
+        locateSpaceship(spaceship, spaceshipSpeed);
+
+        this.dt = dt;
+        this.dt2 = dt * STATE_K;
+
+        calendar = new GregorianCalendar(2020, Calendar.APRIL, 4);;
+
         bodies.add(mars);
         bodies.add(sun);
         bodies.add(earth);
@@ -118,6 +112,30 @@ public class MissionToMars {
         integrationMap.put(sun, new Beeman(new Gravity(getNeighbours(sun))));
     }
 
+    private void locateSpaceship (HardParticle spaceship, int initialSpeed) {
+
+        double sunToEarthDist = sun.distanceTo(earth);
+        double spaceshipToEarthDist = earth.getRadius() + spaceship.getRadius() + 1500;
+
+        double ex = (earth.getX() - sun.getX()) / sunToEarthDist;       /* coseno del angulo */
+        double ey = (earth.getY() - sun.getY()) / sunToEarthDist;       /* seno  del angulo */
+
+        double xCoord = earth.getX() + spaceshipToEarthDist*ex;
+        double yCoord = earth.getY() + spaceshipToEarthDist*ey;
+
+        double speed = initialSpeed + 7.12;
+
+        /* direccion de la nave --> etx = -ey ; ety = ex */
+        double vx = speed * (-ey);
+        double vy = speed * ex;
+
+        vx += earth.getXVelocity();
+        vy += earth.getYVelocity();
+
+        spaceship.setVelocity(vx, vy);
+        spaceship.setCoordinates(xCoord, yCoord);
+
+    }
 
     private void outputCalculations() throws IOException {
         /* TODO: corregir esto */
@@ -140,9 +158,7 @@ public class MissionToMars {
 
     public void simulate(double simulationTime) throws IOException {
 
-        while (!missionComplete || simulationTime > time) {
-
-            /* usar los 3 integradores para actualizar la posicion de la nave y los planetas y el sol en cada dt */
+        while (!hasSpaceshipArrived() || simulationTime > time) {
 
             for (HardParticle p : bodies) {
                 integrationMap.get(p).calculate(p, dt);
@@ -150,7 +166,6 @@ public class MissionToMars {
 
             time += dt;
             updateDays();
-            missionComplete = hasSpaceshipArrived();
         }
 
         outputCalculations();
@@ -251,15 +266,20 @@ public class MissionToMars {
 
     private boolean hasSpaceshipArrived() {
 
-        /* fijar un criterio */
+        double distance = spaceship.distanceTo(mars);
 
-        return false;
+        return distance < EPSILON;
     }
 
     private void updateDays() {
 
         int simulationDays = (int) time / 3600;
         days += simulationDays - days;
+    }
+
+    private void restartCalendar () {
+
+        calendar.set(2020, Calendar.APRIL, 4);
     }
 
     Set<HardParticle> getNeighbours(HardParticle planet) {
@@ -272,9 +292,76 @@ public class MissionToMars {
         return neigh;
     }
 
+    private void initPlanets() {
+        /* sacamos las condiciones iniciales del link  https://ssd.jpl.nasa.gov/horizons.cgi#top al día 06/04 */
+
+        /* MARTE */
+        /*
+            radio 3389.92+-0.04 km
+            Mass x10^23 (kg)      =    6.4171
+            X =-1.697831879172063E-01 Y =-1.452533227422469E+00     TODO: unidades?
+            VX= 1.442541741631660E-02 VY=-3.732586868630861E-04     TODO: unidades?
+         */
+        mars = (HardParticle) new HardParticle.Builder()
+                .withMass(6.4171E23)
+                .withVelocity(1.442541741631660E-02, -3.732586868630861E-04)
+                .withRadius(3389.92)
+                .withCoordinates(-1.697831879172063E-01, -1.452533227422469E+00)
+                .build();
+
+        /* TIERRA */
+        /*
+            radio 6371.01+-0.02 km
+            Mass x10^24 (kg)= 5.97219+-0.0006
+            X =-9.646530350221529E-01 Y =-2.750306360859890E-01     TODO: unidades?
+            VX= 4.564771838790553E-03 VY=-1.656625701516261E-02     TODO: unidades?
+         */
+        earth = (HardParticle) new HardParticle.Builder()
+                .withMass(5.97219E24)
+                .withVelocity(4.564771838790553E-03, -1.656625701516261E-02)
+                .withRadius(6371.01)
+                .withCoordinates(-9.646530350221529E-01, -2.750306360859890E-01)
+                .build();
+
+        /* SOL */
+        /*
+            radio 695700 km
+            Mass, 10^24 kg        = ~1988500
+         */
+        sun = (HardParticle) new HardParticle.Builder()
+                .withMass(1988500E24)
+                .withVelocity(0, 0)
+                .withRadius(695700)
+                .withCoordinates(0, 0).build();
+
+        /* TODO: radio?
+         * TODO: velocidad inicial 8 km por hora. tangente a la orbita de la tierra
+         *       + velocidad orbital respecto de la tierra es de 7,12 km/s
+         * TODO: coordenadas: a 1500 km de la tierra (alineado con el sol)
+         * */
+        /* 1500^2 = x^2 + y^2 con x = y --> 1500^2 = 2*x^2 '--> x = 1500/2^(1/2) */
+        double distance = 1500 / Math.sqrt(2);
+        spaceship = (HardParticle) new HardParticle.Builder()
+                .withMass(2E5)
+                .withVelocity(-8.200470787101123E-06, -2.915722838615252E-06)
+                .withCoordinates(-9.646530350221529E-01 + distance, -2.750306360859890E-01 + distance)
+                .build();
+
+        /* Metodos de integracion, la nave no va posicionada aun */
+        bodies = new HashSet<>();
+        integrationMap = new HashMap<>();
+        bodies.add(mars);
+        bodies.add(sun);
+        bodies.add(earth);
+        integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
+        integrationMap.put(earth, new Beeman(new Gravity(getNeighbours(earth))));
+        integrationMap.put(sun, new Beeman(new Gravity(getNeighbours(sun))));
+    }
+
+
     public static void main(String[] args) {
 
-        MissionToMars mars = new MissionToMars(5); // definir esto // -> a segundos
+        MissionToMars mars = new MissionToMars(5, 8); // definir esto // -> a segundos
 
         System.out.println("Starting simulation...");
         long start = System.currentTimeMillis();

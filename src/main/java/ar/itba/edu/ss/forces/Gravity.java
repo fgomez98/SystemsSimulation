@@ -59,7 +59,7 @@ public class Gravity implements Force {
     }
 
     private double getEY(HardParticle planetA, HardParticle planetB) {
-        return (planetB.getX() - planetA.getX()) / planetA.distanceTo(planetB);
+        return (planetB.getY() - planetA.getY()) / planetA.distanceTo(planetB);
     }
 
 }
