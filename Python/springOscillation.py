@@ -13,7 +13,7 @@ def calculateMSE(real_df: pd.DataFrame, aproximation_df: pd.DataFrame):
 
 attributes = ['Time', 'Position']
 names_frames = ['verlet', 'beeman', 'gear']
-dts = [0.1]
+dts = [0.01, 0.001, 0.0001]
 errors = [[0.0 for i in dts] for j in names_frames]
 
 for j in range(0, len(dts)):
