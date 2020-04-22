@@ -54,4 +54,9 @@ brownian-motion-simulation.xyz
 brownian-motion-static.txt
 nearby.csv
 
+spring-oscillator-analitical-simulation.txt
+spring-oscillator-beeman-simulation.txt
+spring-oscillator-gear-simulation.txt
+spring-oscillator-verlet-simulation.txt
+
 Simulation Frames/*
