@@ -223,4 +223,16 @@ public class Particle {
         this.y = builder.y;
         this.radius = builder.radius;
     }
+
+    protected Particle() {
+    }
+
+    public Particle copy() {
+        Particle p = new Particle();
+        p.id = this.id;
+        p.x = this.x;
+        p.y = this.y;
+        p.radius = this.radius;
+        return p;
+    }
 }

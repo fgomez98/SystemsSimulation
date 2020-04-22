@@ -21,8 +21,8 @@ public class GearOrder5 implements Integration {
     }
 
     @Override
-    public HardParticle calculate(HardParticle particle, double dt) {
-        if (force.isVelocitydependant()) {
+    public void calculate(HardParticle particle, double dt) {
+        if (force.isVelocityDependant()) {
             alpha[0] = (3.0 / 16.0);
         }
 
@@ -38,8 +38,6 @@ public class GearOrder5 implements Integration {
 
         particle.setCoordinates(rxCorected[0], ryCorected[0]);
         particle.setVelocity(rxCorected[1], ryCorected[1]);
-
-        return (HardParticle) new HardParticle.Builder().withMass(particle.getMass()).withVelocity(rxCorected[1], ryCorected[1]).withCoordinates(rxCorected[0], rxCorected[0]).build();
     }
 
     private void rCorrect(double dr2x, double dr2y, double dt) {
@@ -69,16 +67,16 @@ public class GearOrder5 implements Integration {
         rx[1] = particle.getXVelocity();
         ry[1] = particle.getYVelocity();
 
-        rx[2] = force.getX(new double[]{rx[0], ry[0]}, new double[]{rx[1], ry[1]}) / particle.getMass();
-        ry[2] = force.getY(new double[]{rx[0], ry[0]}, new double[]{rx[1], ry[1]}) / particle.getMass();
+        rx[2] = force.getX(new double[]{rx[0], ry[0]}, new double[]{rx[1], ry[1]}, particle.getMass()) / particle.getMass();
+        ry[2] = force.getY(new double[]{rx[0], ry[0]}, new double[]{rx[1], ry[1]}, particle.getMass()) / particle.getMass();
 
-        rx[3] = force.getX(new double[]{rx[1], ry[1]}, new double[]{rx[2], ry[2]}) / particle.getMass();
-        ry[3] = force.getY(new double[]{rx[1], ry[1]}, new double[]{rx[2], ry[2]}) / particle.getMass();
+        rx[3] = force.getX(new double[]{rx[1], ry[1]}, new double[]{rx[2], ry[2]}, particle.getMass()) / particle.getMass();
+        ry[3] = force.getY(new double[]{rx[1], ry[1]}, new double[]{rx[2], ry[2]}, particle.getMass()) / particle.getMass();
 
-        rx[4] = force.getX(new double[]{rx[2], ry[2]}, new double[]{rx[3], ry[3]}) / particle.getMass();
-        ry[4] = force.getY(new double[]{rx[2], ry[2]}, new double[]{rx[3], ry[3]}) / particle.getMass();
+        rx[4] = force.getX(new double[]{rx[2], ry[2]}, new double[]{rx[3], ry[3]}, particle.getMass()) / particle.getMass();
+        ry[4] = force.getY(new double[]{rx[2], ry[2]}, new double[]{rx[3], ry[3]}, particle.getMass()) / particle.getMass();
 
-        rx[5] = force.getX(new double[]{rx[3], ry[3]}, new double[]{rx[4], ry[4]}) / particle.getMass();
-        ry[5] = force.getY(new double[]{rx[3], ry[3]}, new double[]{rx[4], ry[4]}) / particle.getMass();
+        rx[5] = force.getX(new double[]{rx[3], ry[3]}, new double[]{rx[4], ry[4]}, particle.getMass()) / particle.getMass();
+        ry[5] = force.getY(new double[]{rx[3], ry[3]}, new double[]{rx[4], ry[4]}, particle.getMass()) / particle.getMass();
     }
 }

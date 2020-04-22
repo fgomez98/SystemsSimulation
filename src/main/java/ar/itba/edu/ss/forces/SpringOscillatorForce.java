@@ -24,17 +24,17 @@ public class SpringOscillatorForce implements Force {
     }
 
     @Override
-    public double getX(double[] r, double[] v) {
+    public double getX(double[] r, double[] v, double mass) {
         return -1 * ((r[0] * k) + (v[0] * gamma));
     }
 
     @Override
-    public double getY(double[] r, double[] v) {
+    public double getY(double[] r, double[] v, double mass) {
         return -1 * ((r[1] * k) + (v[1] * gamma));
     }
 
     @Override
     public boolean isVelocityDependant() {
-        return false;
+        return true;
     }
 }

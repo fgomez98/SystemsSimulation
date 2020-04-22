@@ -8,9 +8,9 @@ public interface Force {
 
     double getY(HardParticle particle);
 
-    double getX(double[] r, double[] v);
+    double getX(double[] r, double[] v, double mass);
 
-    double getY(double[] r, double[] v);
+    double getY(double[] r, double[] v, double mass);
 
     boolean isVelocityDependant();
 }

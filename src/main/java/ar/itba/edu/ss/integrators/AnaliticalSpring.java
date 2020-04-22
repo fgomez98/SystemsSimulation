@@ -20,10 +20,9 @@ public class AnaliticalSpring implements Integration {
     }
 
     @Override
-    public HardParticle calculate(HardParticle particle, double dt) {
+    public void calculate(HardParticle particle, double dt) {
         time += dt;
         double r = amplitud * Math.exp(-1 * ((gamma) / (2 * mass)) * time) * Math.cos(Math.sqrt((k / mass) - ((gamma * gamma) / (4 * mass * mass))) * time);
         particle.setX(r);
-        return (HardParticle) new HardParticle.Builder().withCoordinates(r, 0).build();
     }
 }

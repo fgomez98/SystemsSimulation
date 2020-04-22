@@ -179,4 +179,20 @@ public class MovingParticle extends Particle {
         this.xVelocity = builder.xVelocity;
         this.yVelocity = builder.yVelocity;
     }
+
+    protected MovingParticle() {
+        super();
+    }
+
+    public MovingParticle copy() {
+        MovingParticle p = new MovingParticle();
+        p.setId(getId());
+        p.setX(getX());
+        p.setY(getY());
+        p.setRadius(getRadius());
+        p.setAngle(getAngle());
+        p.setVelocity(getVelocity());
+        p.setVelocity(getXVelocity(), getYVelocity());
+        return p;
+    }
 }

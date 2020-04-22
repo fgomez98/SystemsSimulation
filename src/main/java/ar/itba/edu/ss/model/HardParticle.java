@@ -151,6 +151,22 @@ public class HardParticle extends MovingParticle {
         b.collisionCount++;
     }
 
+    /*
+        Mutable solo si necesito  para optimizar
+    */
+
+    public void setMass(double mass) {
+        this.mass = mass;
+    }
+
+    /*
+      Mutable solo si necesito  para optimizar
+    */
+
+    public void setCollisionCount(long collisionCount) {
+        this.collisionCount = collisionCount;
+    }
+
     public long getCollisionCount() {
         return collisionCount;
     }
@@ -218,5 +234,23 @@ public class HardParticle extends MovingParticle {
     protected HardParticle(Builder builder) {
         super(builder);
         this.mass = builder.mass;
+    }
+
+    protected HardParticle() {
+        super();
+    }
+
+    public HardParticle copy() {
+        HardParticle p = new HardParticle();
+        p.setId(getId());
+        p.setX(getX());
+        p.setY(getY());
+        p.setRadius(getRadius());
+        p.setAngle(getAngle());
+        p.setVelocity(getVelocity());
+        p.setVelocity(getXVelocity(), getYVelocity());
+        p.setMass(getMass());
+        p.setCollisionCount(getCollisionCount());
+        return p;
     }
 }

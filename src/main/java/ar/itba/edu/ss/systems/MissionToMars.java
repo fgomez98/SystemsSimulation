@@ -1,17 +1,13 @@
 package ar.itba.edu.ss.systems;
 
 import ar.itba.edu.ss.forces.Gravity;
-import ar.itba.edu.ss.integrators.AnaliticalSpring;
 import ar.itba.edu.ss.integrators.Beeman;
-import ar.itba.edu.ss.integrators.Verlet;
 import ar.itba.edu.ss.interfaces.Integration;
 import ar.itba.edu.ss.model.HardParticle;
-import ar.itba.edu.ss.model.Particle;
 import ar.itba.edu.ss.utils.IOUtils;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * a) El momento en el futuro (fecha y cuantos dias desde 06/04/2020) en el cual la nave debería partir para asegurar el arribo a marte. Para ello graficar distancia mínima a marte en función de la fecha de salida.
@@ -21,6 +17,9 @@ import java.util.List;
  */
 
 public class MissionToMars {
+
+    Set<HardParticle> planets = new HashSet<>();
+    Map<HardParticle, Integration> integrationMap = new HashMap<>();
 
     private HardParticle mars;
     private HardParticle earth;
@@ -96,6 +95,12 @@ public class MissionToMars {
 
         this.dt = dt;
         this.dt2 = dt * STATE_K;
+
+        planets.add(mars);planets.add(spaceship);planets.add(sun);planets.add(earth);
+        integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
+        integrationMap.put(earth, new Beeman(new Gravity(getNeighbours(earth))));
+        integrationMap.put(sun, new Beeman(new Gravity(getNeighbours(sun))));
+        integrationMap.put(spaceship, new Beeman(new Gravity(getNeighbours(spaceship))));
     }
 
     private void outputCalculations() throws IOException {
@@ -124,13 +129,13 @@ public class MissionToMars {
 
     public void simulate (double simulationTime) throws IOException {
 
-        /*Integration analiticalSpring = new AnaliticalSpring(k, gamma, mass, amplitud);*/
-        Integration beeman = new Beeman(new Gravity(spaceship));
-        Integration verlet = new Verlet(new Gravity(spaceship));
-
         while (!missionComplete || simulationTime > time) {
 
             /* usar los 3 integradores para actualizar la posicion de la nave y los planetas y el sol en cada dt */
+
+            for (HardParticle p : planets) {
+                integrationMap.get(p).calculate(p, dt);
+            }
 
             time += dt;
             updateDays();
@@ -152,5 +157,15 @@ public class MissionToMars {
 
         int simulationDays = (int) time / 3600;
         days += simulationDays - days;
+    }
+
+    Set<HardParticle> getNeighbours(HardParticle planet) {
+        Set<HardParticle> neigh = new HashSet<>();
+        for (HardParticle p : planets) {
+            if (!p.equals(planet)) {
+                neigh.add(p);
+            }
+        }
+        return neigh;
     }
 }

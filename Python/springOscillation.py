@@ -13,8 +13,8 @@ def calculateMSE(real_df: pd.DataFrame, aproximation_df: pd.DataFrame):
 
 attributes = ['Time', 'Position']
 names_frames = ['verlet', 'beeman', 'gear']
-dts = [0.01, 0.001, 0.0001]
-errors = [[0.0 for i in dts] for j in dts]
+dts = [0.1]
+errors = [[0.0 for i in dts] for j in names_frames]
 
 for j in range(0, len(dts)):
     # ejecucion
@@ -43,13 +43,13 @@ for j in range(0, len(dts)):
     plt.xlabel('Tiempo (s)')
     plt.show()
 
-# pasamos a log10
-dts = [math.log10(dt) for dt in dts]
-errors = [[math.log10(error) for error in row] for row in errors]
-
-for i in range(0, len(errors)):
-    plt.plot(dts, errors[i], label=str(names_frames[i]))
-plt.legend()
-plt.ylabel('log10(ECM)')
-plt.xlabel('log10(dt) [s]')
-plt.show()
+# # pasamos a log10
+# dts = [math.log10(dt) for dt in dts]
+# errors = [[math.log10(error) for error in row] for row in errors]
+#
+# for i in range(0, len(errors)):
+#     plt.plot(dts, errors[i], label=str(names_frames[i]))
+# plt.legend()
+# plt.ylabel('log10(ECM)')
+# plt.xlabel('log10(dt) [s]')
+# plt.show()

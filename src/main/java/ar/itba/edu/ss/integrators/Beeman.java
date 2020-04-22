@@ -18,36 +18,31 @@ public class Beeman implements Integration {
     }
 
     @Override
-    public HardParticle calculate(HardParticle particle, double dt) {
+    public void calculate(HardParticle particle, double dt) {
         double rx = particle.getX();
         double ry = particle.getY();
         double vx = particle.getXVelocity();
         double vy = particle.getYVelocity();
 
-        if (force.isVelocityDependant()) {
-            HardParticle prevParticleState = euler.calculate(particle, -dt);
+        HardParticle prevParticleState = particle.copy();
+        euler.calculate(prevParticleState, -dt);
 
-            rx = rx + (dt * particle.getXVelocity()) + ((2.0 / 3.0) * (dt * dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt * dt) * (force.getX(prevParticleState) / particle.getMass()));
-            ry = ry + (dt * particle.getYVelocity()) + ((2.0 / 3.0) * (dt * dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt * dt) * (force.getY(prevParticleState) / particle.getMass()));
+        rx += (dt * particle.getXVelocity()) + ((2.0 / 3.0) * (dt * dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt * dt) * (force.getX(prevParticleState) / particle.getMass()));
+        ry += (dt * particle.getYVelocity()) + ((2.0 / 3.0) * (dt * dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt * dt) * (force.getY(prevParticleState) / particle.getMass()));
 
-            double vx_prediction = vx + ((3.0 / 2.0) * (dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 2.0) * (dt) * (force.getX(prevParticleState) / particle.getMass()));
-            double vy_prediction = vy + ((3.0 / 2.0) * (dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 2.0) * (dt) * (force.getY(prevParticleState) / particle.getMass()));
+        double vx_prediction = vx + ((3.0 / 2.0) * (dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 2.0) * (dt) * (force.getX(prevParticleState) / particle.getMass()));
+        double vy_prediction = vy + ((3.0 / 2.0) * (dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 2.0) * (dt) * (force.getY(prevParticleState) / particle.getMass()));
 
-            HardParticle nextParticleState = (HardParticle) new HardParticle.Builder().withMass(particle.getMass()).withVelocity(vx_prediction, vy_prediction).withCoordinates(rx, ry).build();
+        HardParticle nextParticleState = particle.copy();
+        nextParticleState.setVelocity(vx_prediction, vy_prediction);
+        nextParticleState.setCoordinates(rx, ry);
 
-            double vx_corected = vx + ((1.0 / 3.0) * (dt) * (force.getX(nextParticleState) / particle.getMass())) + ((5.0 / 6.0) * (dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt) * (force.getX(prevParticleState) / particle.getMass()));
-            double vy_corected = vy + ((1.0 / 3.0) * (dt) * (force.getY(nextParticleState) / particle.getMass())) + ((5.0 / 6.0) * (dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt) * (force.getY(prevParticleState) / particle.getMass()));
-            vx = vx_corected;
-            vy = vy_corected;
-        } else {
-            rx = rx + (dt * particle.getXVelocity()) + ((2.0 / 3.0) * (dt * dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt * dt) * (force.getX(particle) / particle.getMass()));
-            ry = ry + (dt * particle.getYVelocity()) + ((2.0 / 3.0) * (dt * dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt * dt) * (force.getY(particle) / particle.getMass()));
-            vx = vx + ((1.0 / 3.0) * (dt) * (force.getX(particle) / particle.getMass())) + ((5.0 / 6.0) * (dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt) * (force.getX(particle) / particle.getMass()));
-            vy = vy + ((1.0 / 3.0) * (dt) * (force.getY(particle) / particle.getMass())) + ((5.0 / 6.0) * (dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt) * (force.getY(particle) / particle.getMass()));
-        }
+        double vx_corected = vx + ((1.0 / 3.0) * (dt) * (force.getX(nextParticleState) / particle.getMass())) + ((5.0 / 6.0) * (dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt) * (force.getX(prevParticleState) / particle.getMass()));
+        double vy_corected = vy + ((1.0 / 3.0) * (dt) * (force.getY(nextParticleState) / particle.getMass())) + ((5.0 / 6.0) * (dt) * (force.getY(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt) * (force.getY(prevParticleState) / particle.getMass()));
+        vx = vx_corected;
+        vy = vy_corected;
 
         particle.setCoordinates(rx, ry);
         particle.setVelocity(vx, vy);
-        return (HardParticle) new HardParticle.Builder().withMass(particle.getMass()).withVelocity(vx, vy).withCoordinates(rx, ry).build();
     }
 }
