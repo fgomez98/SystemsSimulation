@@ -53,7 +53,7 @@ public class SpringOscillator {
     public void simulate(double simulationTime, Integration integrationMethod, String outFilename) throws IOException {
         createFiles(outFilename);
         double time = 0;
-        while (time < simulationTime) {
+        while (time <= simulationTime) {
 //            if ((time / dt2) - Math.round(time / dt2) == 0) {
             outputData(time, outFilename);
 //            }
@@ -94,7 +94,7 @@ public class SpringOscillator {
     }
 
     public static void main(String[] args) {
-        SpringOscillator so = new SpringOscillator(0.001);
+        SpringOscillator so = new SpringOscillator(0.01);
 
         System.out.println("Starting simulation...");
         long start = System.currentTimeMillis();
