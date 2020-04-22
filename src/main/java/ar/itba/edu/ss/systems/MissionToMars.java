@@ -21,8 +21,8 @@ public class MissionToMars {
 
     private double EPSILON = 0.0000000001;
 
-    Set<HardParticle> planets = new HashSet<>();
-    Map<HardParticle, Integration> integrationMap = new HashMap<>();
+    Set<HardParticle> bodies;
+    Map<HardParticle, Integration> integrationMap;
 
     private HardParticle mars;
     private HardParticle earth;
@@ -44,7 +44,15 @@ public class MissionToMars {
     private static String FINAL_SPEED = "final-speed.txt";
 
     public MissionToMars(double dt) {
+        this.dt = dt;
+        this.dt2 = dt * STATE_K;
 
+        calendar = new GregorianCalendar(2020, 06, 04);
+
+        initPlanets();
+    }
+
+    private void initPlanets() {
         /* sacamos las condiciones iniciales del link  https://ssd.jpl.nasa.gov/horizons.cgi#top al día 06/04 */
 
         /* MARTE */
@@ -99,19 +107,17 @@ public class MissionToMars {
                 .withCoordinates(-9.646530350221529E-01 + distance, -2.750306360859890E-01 + distance)
                 .build();
 
-        this.dt = dt;
-        this.dt2 = dt * STATE_K;
-
-        calendar = new GregorianCalendar(2020, 06, 04);
-
-        planets.add(mars);
-        planets.add(sun);
-        planets.add(earth);
+        /* Metodos de integracion, la nave no va posicionada aun */
+        bodies = new HashSet<>();
+        integrationMap = new HashMap<>();
+        bodies.add(mars);
+        bodies.add(sun);
+        bodies.add(earth);
         integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
         integrationMap.put(earth, new Beeman(new Gravity(getNeighbours(earth))));
         integrationMap.put(sun, new Beeman(new Gravity(getNeighbours(sun))));
-//        integrationMap.put(spaceship, new Beeman(new Gravity(getNeighbours(spaceship))));
     }
+
 
     private void outputCalculations() throws IOException {
         /* TODO: corregir esto */
@@ -138,7 +144,7 @@ public class MissionToMars {
 
             /* usar los 3 integradores para actualizar la posicion de la nave y los planetas y el sol en cada dt */
 
-            for (HardParticle p : planets) {
+            for (HardParticle p : bodies) {
                 integrationMap.get(p).calculate(p, dt);
             }
 
@@ -153,52 +159,74 @@ public class MissionToMars {
 
     // a) El momento en el futuro (fecha y cuantos dias desde 06/04/2020) en el cual la nave debería partir para asegurar el arribo a marte. Para ello graficar distancia mínima a marte en función de la fecha de salida.
 
-    private double simulateFutureArrival(double simulationTimeFuture, double simulationTimeTotal) throws IOException {
+    private void simulateFutureArrival(double simulationTimeTotal) throws IOException {
+        List<Double> distances = new ArrayList<>();
         boolean hasLaunched = false;
-        double launchTime = 0;
-        double minDist = Double.MAX_VALUE;
-        Set<HardParticle> savedPositions = planets;
-        while (launchTime <= simulationTimeTotal) {
-            planets = savedPositions;
-            savedPositions = saveLastSimulationPositions();
-            double currentSimulationTime = launchTime;
-            while (currentSimulationTime <= simulationTimeTotal) {
-                if (launchTime == currentSimulationTime) {
-                    addSpaceShip();
+        double days = 0;
+        while (days <= 200) { // dias desde 06/04/2020 cuando se efectua el lanzamiento
+            // posicionamos los planetas en sus posiciones iniciales
+            initPlanets();
+            double minDist = Double.MAX_VALUE;
+            double launchTime = days * 86400; // -> a segundos
+            double currentSimulationTime = 0;
+            while (currentSimulationTime <= simulationTimeTotal) { // tiempo total a simular -> en segundos por que la velocidad esta en km/s
+                if (!hasLaunched && Math.abs(currentSimulationTime - launchTime) <= 0.0000000001) {
                     hasLaunched = true;
+                    addSpaceShip();
                 }
-                for (HardParticle p : planets) {
+                for (HardParticle p : bodies) {
                     integrationMap.get(p).calculate(p, dt);
                 }
                 if (hasLaunched) {
                     double dist = spaceship.distanceTo(mars);
                     if (dist < minDist) {
                         minDist = dist;
-
-                    }
-                    if (dist <= EPSILON) {
-                        // arrived
-                        break;
                     }
                 }
-                currentSimulationTime += dt;
+                currentSimulationTime += dt; // paso temporal a considerar en segundos otra vez
             }
-            launchTime += dt;
+            distances.add(minDist);
+            days++;
         }
-        return launchTime;
+        IOUtils.CSVWrite("distances_mars.txt",
+                distances,
+                "",
+                p -> p + "\n",
+                false);
     }
 
     private Set<HardParticle> saveLastSimulationPositions() {
         Set<HardParticle> positions = new HashSet<>();
-        for (HardParticle p: planets ) {
+        for (HardParticle p : bodies) {
             positions.add(p.copy());
         }
         return positions;
     }
 
+    private void locateShip(double initialSpeed) {
+        double distanceFactor = earth.getRadius() + 1500; // la estacion se encuentra a 1500km
+        double ex = (earth.getX() - sun.getX()) / earth.distanceTo(sun);
+        double ey = (earth.getY() - sun.getY()) / earth.distanceTo(sun);
+        double rx = earth.getX() + distanceFactor * ex;
+        double ry = earth.getY() + distanceFactor * ey;
+        //velocidad orbital respecto de la tierra es de 7,12 km/s
+        double v_en_x = (initialSpeed + 7.12) * ex;
+        double v_en_y = (initialSpeed + 7.12) * ey;
+        //direcciones de la nave et_x = -en_y ; et_y = en_x
+        double vx = -v_en_y;
+        double vy = v_en_x;
+        vx += earth.getXVelocity();
+        vy += earth.getYVelocity();
+        spaceship = (HardParticle) new HardParticle.Builder()
+                .withMass(2E5)
+                .withVelocity(vx, vy)
+                .withCoordinates(rx, ry)
+                .build();
+    }
+
     private void addSpaceShip() {
-        // esto tendria que ser acorde a la posicion de la tierra y otras cosas ?
-        planets.add(spaceship);
+        locateShip(8.0);
+        bodies.add(spaceship);
         // re calculamos los vecinos para las fuerzas
         integrationMap = new HashMap<>();
         integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
@@ -236,11 +264,27 @@ public class MissionToMars {
 
     Set<HardParticle> getNeighbours(HardParticle planet) {
         Set<HardParticle> neigh = new HashSet<>();
-        for (HardParticle p : planets) {
+        for (HardParticle p : bodies) {
             if (!p.equals(planet)) {
                 neigh.add(p);
             }
         }
         return neigh;
+    }
+
+    public static void main(String[] args) {
+
+        MissionToMars mars = new MissionToMars(5); // definir esto // -> a segundos
+
+        System.out.println("Starting simulation...");
+        long start = System.currentTimeMillis();
+
+        try {
+            mars.simulateFutureArrival(200);  // definir esto // -> a segundos
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Time elapsed: " + (System.currentTimeMillis() - start));
     }
 }
