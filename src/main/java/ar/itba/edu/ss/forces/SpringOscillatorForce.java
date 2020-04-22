@@ -20,7 +20,7 @@ public class SpringOscillatorForce implements Force {
 
     @Override
     public double getY(HardParticle particle) {
-        return 0.0;
+        return -1 * (particle.getY() * k + particle.getYVelocity() * gamma);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class SpringOscillatorForce implements Force {
 
     @Override
     public double getY(double[] r, double[] v) {
-        return 0.0;
+        return -1 * ((r[1] * k) + (v[1] * gamma));
     }
 
     @Override

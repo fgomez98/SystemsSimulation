@@ -3,6 +3,7 @@ package ar.itba.edu.ss.systems;
 import ar.itba.edu.ss.forces.SpringOscillatorForce;
 import ar.itba.edu.ss.integrators.AnaliticalSpring;
 import ar.itba.edu.ss.integrators.Beeman;
+import ar.itba.edu.ss.integrators.GearOrder5;
 import ar.itba.edu.ss.integrators.Verlet;
 import ar.itba.edu.ss.interfaces.Integration;
 import ar.itba.edu.ss.model.HardParticle;
@@ -17,6 +18,7 @@ public class SpringOscillator {
     public static String SPRING_OSCILLATOR_ANALITICAL_FILENAME = "spring-oscillator-analitical-simulation.txt";
     public static String SPRING_OSCILLATOR_VERLET_FILENAME = "spring-oscillator-verlet-simulation.txt";
     public static String SPRING_OSCILLATOR_BEEMAN_FILENAME = "spring-oscillator-beeman-simulation.txt";
+    public static String SPRING_OSCILLATOR_GEAR_FILENAME = "spring-oscillator-gear-simulation.txt";
     public static double SAVE_STATE_K = 5;
 
     /*
@@ -68,6 +70,9 @@ public class SpringOscillator {
         particle.setVelocity(-(amplitud * gamma) / (2 * mass), 0.0);
         particle.setCoordinates(1, 0);
         simulate(simulationTime, new Beeman(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_BEEMAN_FILENAME);
+        particle.setVelocity(-(amplitud * gamma) / (2 * mass), 0.0);
+        particle.setCoordinates(1, 0);
+        simulate(simulationTime, new GearOrder5(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_GEAR_FILENAME);
     }
 
     private void createFiles(String outFilename) throws IOException {
@@ -88,8 +93,8 @@ public class SpringOscillator {
                 true);
     }
 
-    public static void main(String args[]) {
-        SpringOscillator so = new SpringOscillator(0.0001);
+    public static void main(String[] args) {
+        SpringOscillator so = new SpringOscillator(0.001);
 
         System.out.println("Starting simulation...");
         long start = System.currentTimeMillis();
