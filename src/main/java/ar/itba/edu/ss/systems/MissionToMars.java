@@ -160,7 +160,7 @@ public class MissionToMars {
 
             simulate(simulationTime);
             if (missionComplete) {
-
+                outputPredictions();
             }
         }
     }
