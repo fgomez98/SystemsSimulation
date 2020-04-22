@@ -24,7 +24,7 @@ public class Beeman implements Integration {
         double vx = particle.getXVelocity();
         double vy = particle.getYVelocity();
 
-        if (force.isVelocitydependant()) {
+        if (force.isVelocityDependant()) {
             HardParticle prevParticleState = euler.calculate(particle, -dt);
 
             rx = rx + (dt * particle.getXVelocity()) + ((2.0 / 3.0) * (dt * dt) * (force.getX(particle) / particle.getMass())) - ((1.0 / 6.0) * (dt * dt) * (force.getX(prevParticleState) / particle.getMass()));

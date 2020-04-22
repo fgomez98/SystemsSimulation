@@ -34,7 +34,7 @@ public class SpringOscillatorForce implements Force {
     }
 
     @Override
-    public boolean isVelocitydependant() {
+    public boolean isVelocityDependant() {
         return false;
     }
 }
