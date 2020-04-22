@@ -105,13 +105,12 @@ public class MissionToMars {
         calendar = new GregorianCalendar(2020, 06, 04);
 
         planets.add(mars);
-        planets.add(spaceship);
         planets.add(sun);
         planets.add(earth);
         integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
         integrationMap.put(earth, new Beeman(new Gravity(getNeighbours(earth))));
         integrationMap.put(sun, new Beeman(new Gravity(getNeighbours(sun))));
-        integrationMap.put(spaceship, new Beeman(new Gravity(getNeighbours(spaceship))));
+//        integrationMap.put(spaceship, new Beeman(new Gravity(getNeighbours(spaceship))));
     }
 
     private void outputCalculations() throws IOException {
@@ -154,28 +153,58 @@ public class MissionToMars {
 
     // a) El momento en el futuro (fecha y cuantos dias desde 06/04/2020) en el cual la nave debería partir para asegurar el arribo a marte. Para ello graficar distancia mínima a marte en función de la fecha de salida.
 
-    private double simulateFutureArrival(double simulationTimeFuture, double simulationTime) throws IOException {
-        double futureTime = 0;
-        double currentTime = 0;
+    private double simulateFutureArrival(double simulationTimeFuture, double simulationTimeTotal) throws IOException {
+        boolean hasLaunched = false;
+        double launchTime = 0;
         double minDist = Double.MAX_VALUE;
-        while (currentTime < simulationTime) {
-
-            for (HardParticle p : planets) {
-                integrationMap.get(p).calculate(p, dt);
-                double dist = spaceship.distanceTo(mars);
-                if (dist < minDist) {
-                    minDist = dist;
-                    futureTime = currentTime;
+        Set<HardParticle> savedPositions = planets;
+        while (launchTime <= simulationTimeTotal) {
+            planets = savedPositions;
+            savedPositions = saveLastSimulationPositions();
+            double currentSimulationTime = launchTime;
+            while (currentSimulationTime <= simulationTimeTotal) {
+                if (launchTime == currentSimulationTime) {
+                    addSpaceShip();
+                    hasLaunched = true;
                 }
-                if (dist <= EPSILON) {
-                    // arrived
-                    break;
+                for (HardParticle p : planets) {
+                    integrationMap.get(p).calculate(p, dt);
                 }
+                if (hasLaunched) {
+                    double dist = spaceship.distanceTo(mars);
+                    if (dist < minDist) {
+                        minDist = dist;
 
-                currentTime += dt;
+                    }
+                    if (dist <= EPSILON) {
+                        // arrived
+                        break;
+                    }
+                }
+                currentSimulationTime += dt;
             }
+            launchTime += dt;
         }
-        return futureTime;
+        return launchTime;
+    }
+
+    private Set<HardParticle> saveLastSimulationPositions() {
+        Set<HardParticle> positions = new HashSet<>();
+        for (HardParticle p: planets ) {
+            positions.add(p.copy());
+        }
+        return positions;
+    }
+
+    private void addSpaceShip() {
+        // esto tendria que ser acorde a la posicion de la tierra y otras cosas ?
+        planets.add(spaceship);
+        // re calculamos los vecinos para las fuerzas
+        integrationMap = new HashMap<>();
+        integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
+        integrationMap.put(earth, new Beeman(new Gravity(getNeighbours(earth))));
+        integrationMap.put(sun, new Beeman(new Gravity(getNeighbours(sun))));
+        integrationMap.put(spaceship, new Beeman(new Gravity(getNeighbours(spaceship))));
     }
 
     private void outputPredictions() throws IOException {
