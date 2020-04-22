@@ -19,6 +19,8 @@ import java.text.SimpleDateFormat;
 
 public class MissionToMars {
 
+    private double EPSILON = 0.0000000001;
+
     Set<HardParticle> planets = new HashSet<>();
     Map<HardParticle, Integration> integrationMap = new HashMap<>();
 
@@ -35,7 +37,6 @@ public class MissionToMars {
     private int initialSpeed1 = 8;      /* 8 km/hr */
     private int initialSpeed2 = 13;      /* 13 km/hr */
     private boolean missionComplete = false;
-    private double futureTime = 0;
     private Calendar calendar;
 
     private static String FUTURE_ARRIVAL = "future-arrival.txt";
@@ -86,10 +87,10 @@ public class MissionToMars {
                 .withCoordinates(0, 0).build();
 
         /* TODO: radio?
-        * TODO: velocidad inicial 8 km por hora. tangente a la orbita de la tierra
-        *       + velocidad orbital respecto de la tierra es de 7,12 km/s
-        * TODO: coordenadas: a 1500 km de la tierra (alineado con el sol)
-        * */
+         * TODO: velocidad inicial 8 km por hora. tangente a la orbita de la tierra
+         *       + velocidad orbital respecto de la tierra es de 7,12 km/s
+         * TODO: coordenadas: a 1500 km de la tierra (alineado con el sol)
+         * */
         /* 1500^2 = x^2 + y^2 con x = y --> 1500^2 = 2*x^2 '--> x = 1500/2^(1/2) */
         double distance = 1500 / Math.sqrt(2);
         spaceship = (HardParticle) new HardParticle.Builder()
@@ -103,7 +104,10 @@ public class MissionToMars {
 
         calendar = new GregorianCalendar(2020, 06, 04);
 
-        planets.add(mars);planets.add(spaceship);planets.add(sun);planets.add(earth);
+        planets.add(mars);
+        planets.add(spaceship);
+        planets.add(sun);
+        planets.add(earth);
         integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
         integrationMap.put(earth, new Beeman(new Gravity(getNeighbours(earth))));
         integrationMap.put(sun, new Beeman(new Gravity(getNeighbours(sun))));
@@ -129,7 +133,7 @@ public class MissionToMars {
     }
 
 
-    public void simulate (double simulationTime) throws IOException {
+    public void simulate(double simulationTime) throws IOException {
 
         while (!missionComplete || simulationTime > time) {
 
@@ -150,22 +154,31 @@ public class MissionToMars {
 
     // a) El momento en el futuro (fecha y cuantos dias desde 06/04/2020) en el cual la nave debería partir para asegurar el arribo a marte. Para ello graficar distancia mínima a marte en función de la fecha de salida.
 
-    private void simulateFutureArrival (double simulationTimeFuture, double simulationTime) throws IOException {
+    private double simulateFutureArrival(double simulationTimeFuture, double simulationTime) throws IOException {
+        double futureTime = 0;
+        double currentTime = 0;
+        double minDist = Double.MAX_VALUE;
+        while (currentTime < simulationTime) {
 
-        while (futureTime < simulationTimeFuture) {
+            for (HardParticle p : planets) {
+                integrationMap.get(p).calculate(p, dt);
+                double dist = spaceship.distanceTo(mars);
+                if (dist < minDist) {
+                    minDist = dist;
+                    futureTime = currentTime;
+                }
+                if (dist <= EPSILON) {
+                    // arrived
+                    break;
+                }
 
-            days = 0;
-            time = 0;
-            missionComplete = false;
-
-            simulate(simulationTime);
-            if (missionComplete) {
-                outputPredictions();
+                currentTime += dt;
             }
         }
+        return futureTime;
     }
 
-    private void outputPredictions () throws IOException {
+    private void outputPredictions() throws IOException {
 
         List<HardParticle> data = new LinkedList<>();
         data.add(spaceship);
@@ -179,14 +192,14 @@ public class MissionToMars {
                 false);
     }
 
-    private boolean hasSpaceshipArrived () {
+    private boolean hasSpaceshipArrived() {
 
         /* fijar un criterio */
 
         return false;
     }
 
-    private void updateDays () {
+    private void updateDays() {
 
         int simulationDays = (int) time / 3600;
         days += simulationDays - days;
