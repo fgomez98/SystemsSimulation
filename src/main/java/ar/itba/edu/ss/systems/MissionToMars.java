@@ -8,6 +8,7 @@ import ar.itba.edu.ss.utils.IOUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.text.SimpleDateFormat;
 
 /**
  * a) El momento en el futuro (fecha y cuantos dias desde 06/04/2020) en el cual la nave debería partir para asegurar el arribo a marte. Para ello graficar distancia mínima a marte en función de la fecha de salida.
@@ -34,6 +35,8 @@ public class MissionToMars {
     private int initialSpeed1 = 8;      /* 8 km/hr */
     private int initialSpeed2 = 13;      /* 13 km/hr */
     private boolean missionComplete = false;
+    private double futureTime = 0;
+    private Calendar calendar;
 
     private static String FUTURE_ARRIVAL = "future-arrival.txt";
     private static String TIME_OF_TRIP = "time-of-trip.txt";
@@ -87,14 +90,18 @@ public class MissionToMars {
         *       + velocidad orbital respecto de la tierra es de 7,12 km/s
         * TODO: coordenadas: a 1500 km de la tierra (alineado con el sol)
         * */
+        /* 1500^2 = x^2 + y^2 con x = y --> 1500^2 = 2*x^2 '--> x = 1500/2^(1/2) */
+        double distance = 1500 / Math.sqrt(2);
         spaceship = (HardParticle) new HardParticle.Builder()
                 .withMass(2E5)
                 .withVelocity(-8.200470787101123E-06, -2.915722838615252E-06)
-                .withCoordinates(-9.646530350221529E-01, -2.750306360859890E-01)
+                .withCoordinates(-9.646530350221529E-01 + distance, -2.750306360859890E-01 + distance)
                 .build();
 
         this.dt = dt;
         this.dt2 = dt * STATE_K;
+
+        calendar = new GregorianCalendar(2020, 06, 04);
 
         planets.add(mars);planets.add(spaceship);planets.add(sun);planets.add(earth);
         integrationMap.put(mars, new Beeman(new Gravity(getNeighbours(mars))));
@@ -107,11 +114,6 @@ public class MissionToMars {
         /* TODO: corregir esto */
         List<HardParticle> data = new LinkedList<>();
         data.add(spaceship);
-        IOUtils.CSVWrite(FUTURE_ARRIVAL,
-                data,
-                "",
-                particle -> time / 3600 + "\n",
-                false);
 
         IOUtils.CSVWrite(TIME_OF_TRIP,
                 data,
@@ -144,6 +146,37 @@ public class MissionToMars {
 
         outputCalculations();
 
+    }
+
+    // a) El momento en el futuro (fecha y cuantos dias desde 06/04/2020) en el cual la nave debería partir para asegurar el arribo a marte. Para ello graficar distancia mínima a marte en función de la fecha de salida.
+
+    private void simulateFutureArrival (double simulationTimeFuture, double simulationTime) throws IOException {
+
+        while (futureTime < simulationTimeFuture) {
+
+            days = 0;
+            time = 0;
+            missionComplete = false;
+
+            simulate(simulationTime);
+            if (missionComplete) {
+
+            }
+        }
+    }
+
+    private void outputPredictions () throws IOException {
+
+        List<HardParticle> data = new LinkedList<>();
+        data.add(spaceship);
+        SimpleDateFormat formattedDate
+                = new SimpleDateFormat("dd-MMM-yyyy");
+
+        IOUtils.CSVWrite(FUTURE_ARRIVAL,
+                data,
+                "",
+                particle -> days + ", " + formattedDate.format(calendar.getTime()),
+                false);
     }
 
     private boolean hasSpaceshipArrived () {
