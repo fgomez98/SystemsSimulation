@@ -115,7 +115,7 @@ public class MissionToMars {
     private void locateSpaceship (HardParticle spaceship, int initialSpeed) {
 
         double sunToEarthDist = sun.distanceTo(earth);
-        double spaceshipToEarthDist = earth.getRadius() + 1500;
+        double spaceshipToEarthDist = earth.getRadius() + spaceship.getRadius() + 1500;
 
         double ex = (earth.getX() - sun.getX()) / sunToEarthDist;       /* coseno del angulo */
         double ey = (earth.getY() - sun.getY()) / sunToEarthDist;       /* seno  del angulo */
