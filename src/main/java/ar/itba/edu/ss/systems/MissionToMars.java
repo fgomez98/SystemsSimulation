@@ -99,12 +99,13 @@ public class MissionToMars {
     }
 
     private void outputCalculations() throws IOException {
+        /* TODO: corregir esto */
         List<HardParticle> data = new LinkedList<>();
         data.add(spaceship);
         IOUtils.CSVWrite(FUTURE_ARRIVAL,
                 data,
                 "",
-                time -> time + "\n",
+                particle -> time / 3600 + "\n",
                 false);
 
         IOUtils.CSVWrite(TIME_OF_TRIP,
@@ -127,9 +128,9 @@ public class MissionToMars {
         Integration beeman = new Beeman(new Gravity(spaceship));
         Integration verlet = new Verlet(new Gravity(spaceship));
 
-        while (!missionComplete && simulationTime > time) {
+        while (!missionComplete || simulationTime > time) {
 
-            /* usar los 3 integradores para actualizar la posicion de la nave en cada dt */
+            /* usar los 3 integradores para actualizar la posicion de la nave y los planetas y el sol en cada dt */
 
             time += dt;
             updateDays();
