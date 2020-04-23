@@ -30,16 +30,22 @@ public class MissionToMars {
     private HardParticle earth;
     private HardParticle sun;
     private HardParticle spaceship;
+    private HardParticle jupiter;
+    private HardParticle venus;
 
     private Set<HardParticle> marsNeighbours;
     private Set<HardParticle> earthNeighbours;
     private Set<HardParticle> sunNeighbours;
     private Set<HardParticle> spaceshipNeighbours;
+    private Set<HardParticle> jupiterNeighbours;
+    private Set<HardParticle> venusNeighbours;
 
     private Integration marsIntegrator;
     private Integration earthIntegrator;
     private Integration sunIntegrator;
     private Integration spaceshipIntegrator;
+    private Integration jupiterIntegrator;
+    private Integration venusIntegrator;
 
     private double dt;
     private double dt2;
@@ -55,7 +61,7 @@ public class MissionToMars {
         this.dt = dt;
         this.dt2 = dt * STATE_K;
         this.initialSpeed = spaceshipSpeed;
-        initPlanets();
+        initPlanets(false);
     }
 
     public void simulate(double simulationTimeTotal, double launchDay) throws IOException {
@@ -64,7 +70,7 @@ public class MissionToMars {
 
     private TravelData simulate(double simulationTimeTotal, double launchDay, double initialVelocity, boolean outputOvito) {
         initialSpeed = initialVelocity;
-        initPlanets();
+        initPlanets(false);
         boolean hasLaunched = false;
         double minDist = Double.MAX_VALUE;
         double minTime = 0;
@@ -156,6 +162,8 @@ public class MissionToMars {
 
     private void addSpaceShip() {
         locateSpaceship(spaceship, initialSpeed);
+        System.out.println(earth.getX() + " , " + earth.getY() + " , " + earth.getXVelocity() + " , " + earth.getYVelocity());
+        System.out.println(spaceship.getX() + " , " + spaceship.getY() + " , " + spaceship.getXVelocity() + " , " + spaceship.getYVelocity());
         bodies.add(spaceship);
         // re calculamos los vecinos para las fuerzas
         marsNeighbours.add(spaceship.copy());
@@ -205,7 +213,7 @@ public class MissionToMars {
         spaceshipIntegrator = new Beeman(new Gravity(spaceshipNeighbours));
     }
 
-    private void initPlanets() {
+    private void initPlanets(boolean addPlanets) {
         /* sacamos las condiciones iniciales del link  https://ssd.jpl.nasa.gov/horizons.cgi#top al día 06/04
         * UNIDADES
         *   Posición en km
@@ -242,6 +250,36 @@ public class MissionToMars {
                 .withCoordinates(-144310040.00360658765, -41143997.535730540752)
                 .build();
 
+        /* JUPITER */
+        /*
+            Mass x10^24 (kg)      = 1898.13+-.19
+            Vol. Mean Radius (km) = 69911+-6
+            X = 1.231546427485162E+00 Y =-5.044220968142067E+00
+            VX= 7.247395081155700E-03 VY= 2.147729550898136E-03
+         */
+
+        jupiter = (HardParticle) new HardParticle.Builder(2)
+                .withMass(1898.13E24)
+                .withVelocity(12.548551762297989853, 3.7187010145119026028)
+                .withRadius(69911)
+                .withCoordinates(184236723.21997219324, -754604716.17434585094)
+                .build();
+
+        /* VENUS */
+        /*
+            Vol. Mean Radius (km) =  6051.84+-0.01
+            Mass x10^23 (kg)      =    48.685
+            X =-6.695856951979585E-01 Y = 2.585014590403438E-01
+            VX=-7.377780583932116E-03 VY=-1.896246682745872E-02
+         */
+
+        venus = (HardParticle) new HardParticle.Builder(2)
+                .withMass(48.685E23)
+                .withVelocity(-12.774308632500545713, -32.832692831101951469)
+                .withRadius(6051.84)
+                .withCoordinates(-100168594.25279380381, 38671267.845278695226)
+                .build();
+
         /* SOL */
         /*
             radio 695700 km
@@ -264,29 +302,59 @@ public class MissionToMars {
         marsNeighbours = new HashSet<>();
         marsNeighbours.add(earth.copy());
         marsNeighbours.add(sun.copy());
+        if (addPlanets) marsNeighbours.add(jupiter.copy());
+        if (addPlanets) marsNeighbours.add(venus.copy());
 
         earthNeighbours = new HashSet<>();
         earthNeighbours.add(sun.copy());
         earthNeighbours.add(mars.copy());
+        if (addPlanets) earthNeighbours.add(jupiter.copy());
+        if (addPlanets) earthNeighbours.add(venus.copy());
 
         sunNeighbours = new HashSet<>();
         sunNeighbours.add(earth.copy());
         sunNeighbours.add(mars.copy());
+        if (addPlanets) sunNeighbours.add(jupiter.copy());
+        if (addPlanets) sunNeighbours.add(venus.copy());
 
         spaceshipNeighbours = new HashSet<>();
         spaceshipNeighbours.add(sun.copy());
         spaceshipNeighbours.add(earth.copy());
         spaceshipNeighbours.add(mars.copy());
+        if (addPlanets) spaceshipNeighbours.add(jupiter.copy());
+        if (addPlanets) spaceshipNeighbours.add(venus.copy());
+
+        if (addPlanets) {
+            jupiterNeighbours = new HashSet<>();
+            jupiterNeighbours.add(earth.copy());
+            jupiterNeighbours.add(mars.copy());
+            jupiterNeighbours.add(sun.copy());
+            jupiterNeighbours.add(venus.copy());
+
+            venusNeighbours = new HashSet<>();
+            venusNeighbours.add(earth.copy());
+            venusNeighbours.add(mars.copy());
+            venusNeighbours.add(sun.copy());
+            venusNeighbours.add(jupiter.copy());
+        }
 
         marsIntegrator = new Beeman(new Gravity(marsNeighbours));
         earthIntegrator = new Beeman(new Gravity(earthNeighbours));
         sunIntegrator = new Beeman(new Gravity(sunNeighbours));
         spaceshipIntegrator = new Beeman(new Gravity(spaceshipNeighbours));
+        if (addPlanets) {
+            jupiterIntegrator = new Beeman(new Gravity(jupiterNeighbours));
+            venusIntegrator = new Beeman(new Gravity(venusNeighbours));
+        }
 
         bodies = new ArrayList<>();
         bodies.add(mars);
         bodies.add(sun);
         bodies.add(earth);
+        if (addPlanets) {
+            bodies.add(jupiter);
+            bodies.add(venus);
+        }
     }
 
     public static void main(String[] args) {

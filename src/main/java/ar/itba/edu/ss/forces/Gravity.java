@@ -20,7 +20,7 @@ public class Gravity implements Force {
     public double getX(HardParticle planet) {
         double totalFx = 0.0;
         for (HardParticle p : planets) {
-            totalFx += getF(planet, p) * getEX(planet, p);
+            totalFx += G * getF(planet, p) * getEX(planet, p);
         }
         return totalFx;
     }
@@ -29,7 +29,7 @@ public class Gravity implements Force {
     public double getY(HardParticle planet) {
         double totalFy = 0.0;
         for (HardParticle p : planets) {
-            totalFy += getF(planet, p) * getEY(planet, p);
+            totalFy += G * getF(planet, p) * getEY(planet, p);
         }
         return totalFy;
     }
@@ -50,7 +50,7 @@ public class Gravity implements Force {
     }
 
     private double getF(HardParticle planetA, HardParticle planetB) {
-        return (G * planetA.getMass() * planetB.getMass()) / Math.pow(getDistance(planetA, planetB), 2);
+        return ( planetA.getMass() * planetB.getMass()) / Math.pow(getDistance(planetA, planetB), 2);
     }
 
     private double getEX(HardParticle planetA, HardParticle planetB) {
@@ -62,7 +62,7 @@ public class Gravity implements Force {
     }
 
     private double getDistance(HardParticle planetA, HardParticle planetB) {
-        return Point.distance(planetA.getX(), planetA.getY(), planetB.getX(), planetB.getY());
+        return Math.abs(Point.distance(planetA.getX(), planetA.getY(), planetB.getX(), planetB.getY()));
     }
 
 }
