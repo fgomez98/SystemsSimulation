@@ -68,8 +68,8 @@ public class MissionToMars {
 
     private void simulateFutureArrival(double simulationTimeTotal) throws IOException {
         List<Pair<Double, Double>> distances = new ArrayList<>();
-        double days = 0;
-        while (days <= 2) { // dias desde 06/04/2020 cuando se efectua el lanzamiento
+        double days = 140;
+        while (days < 200) { // dias desde 06/04/2020 cuando se efectua el lanzamiento
             // posicionamos los planetas en sus posiciones iniciales
             initPlanets();
             boolean hasLaunched = false;
@@ -85,18 +85,46 @@ public class MissionToMars {
             while (currentSimulationTime <= simulationTimeTotal) { // tiempo total a simular -> en segundos por que la velocidad esta en km/s
                 if (!hasLaunched && (currentSimulationTime >= launchTime)) {
                     hasLaunched = true;
-//                    addSpaceShip();
+                    addSpaceShip();
                 }
                 marsIntegrator.calculate(mars, dt);
                 earthIntegrator.calculate(earth, dt);
                 sunIntegrator.calculate(sun, dt);
+
+                marsNeighbours = new HashSet<>();
+                marsNeighbours.add(earth.copy());
+                marsNeighbours.add(sun.copy());
+
+                earthNeighbours = new HashSet<>();
+                earthNeighbours.add(sun.copy());
+                earthNeighbours.add(mars.copy());
+
+                sunNeighbours = new HashSet<>();
+                sunNeighbours.add(earth.copy());
+                sunNeighbours.add(mars.copy());
+
                 if (hasLaunched) {
                     spaceshipIntegrator.calculate(spaceship, dt);
                     double dist = Point.distance(spaceship.getX(), spaceship.getY(), mars.getX(), mars.getY());
                     if (dist < minDist) {
                         minDist = dist;
                     }
+
+                    spaceshipNeighbours = new HashSet<>();
+                    spaceshipNeighbours.add(sun.copy());
+                    spaceshipNeighbours.add(earth.copy());
+                    spaceshipNeighbours.add(mars.copy());
+
+                    sunNeighbours.add(spaceship.copy());
+                    earthNeighbours.add(spaceship.copy());
+                    marsNeighbours.add(spaceship.copy());
+
+                    spaceshipIntegrator = new Beeman(new Gravity(spaceshipNeighbours));
                 }
+
+                marsIntegrator = new Beeman(new Gravity(marsNeighbours));
+                earthIntegrator = new Beeman(new Gravity(earthNeighbours));
+                sunIntegrator = new Beeman(new Gravity(sunNeighbours));
 
                 IOUtils.ovitoOutputParticles("mars.xyz",
                         bodies,
@@ -108,11 +136,11 @@ public class MissionToMars {
             distances.add(new Pair(days, minDist));
             days++;
         }
-//        IOUtils.CSVWrite("distances_mars.txt",
-//                distances,
-//                "Days,Distance\n",
-//                p -> p.getKey() + "," + p.getValue() + "\n",
-//                false);
+        IOUtils.CSVWrite("distances_mars.txt",
+                distances,
+                "Days,Distance\n",
+                p -> p.getKey() + "," + p.getValue() + "\n",
+                false);
     }
 
     private void locateSpaceship(HardParticle spaceship, double initialSpeed) {
@@ -142,9 +170,9 @@ public class MissionToMars {
         locateSpaceship(spaceship, 8.0);
         bodies.add(spaceship);
         // re calculamos los vecinos para las fuerzas
-        marsNeighbours.add(spaceship);
-        earthNeighbours.add(spaceship);
-        sunNeighbours.add(spaceship);
+        marsNeighbours.add(spaceship.copy());
+        earthNeighbours.add(spaceship.copy());
+        sunNeighbours.add(spaceship.copy());
     }
 
     private boolean hasSpaceshipArrived() {
@@ -234,27 +262,27 @@ public class MissionToMars {
 
         spaceship = (HardParticle) new HardParticle.Builder(4)
                 .withMass(2E5)
-                .withRadius(0.2)     /* a nuestro criterio */
+                .withRadius(50)     /* a nuestro criterio */
                 .build();
 
 
         /* Metodos de integracion, la nave no va posicionada aun */
         marsNeighbours = new HashSet<>();
-        marsNeighbours.add(earth);
-        marsNeighbours.add(sun);
+        marsNeighbours.add(earth.copy());
+        marsNeighbours.add(sun.copy());
 
         earthNeighbours = new HashSet<>();
-        earthNeighbours.add(sun);
-        earthNeighbours.add(mars);
+        earthNeighbours.add(sun.copy());
+        earthNeighbours.add(mars.copy());
 
         sunNeighbours = new HashSet<>();
-        sunNeighbours.add(earth);
-        sunNeighbours.add(mars);
+        sunNeighbours.add(earth.copy());
+        sunNeighbours.add(mars.copy());
 
         spaceshipNeighbours = new HashSet<>();
-        spaceshipNeighbours.add(sun);
-        spaceshipNeighbours.add(earth);
-        spaceshipNeighbours.add(mars);
+        spaceshipNeighbours.add(sun.copy());
+        spaceshipNeighbours.add(earth.copy());
+        spaceshipNeighbours.add(mars.copy());
 
         marsIntegrator = new Beeman(new Gravity(marsNeighbours));
         earthIntegrator = new Beeman(new Gravity(earthNeighbours));
@@ -305,7 +333,7 @@ public class MissionToMars {
         long start = System.currentTimeMillis();
 
         try {
-            mars.simulateFutureArrival((365 / 2) * 24 * 3600);  // 1 año = 365 dias, 1 dia con 24hrs, 1 hora con 3600
+            mars.simulateFutureArrival((365/2) * 24 * 3600);  // 1 año = 365 dias, 1 dia con 24hrs, 1 hora con 3600
         } catch (IOException e) {
             e.printStackTrace();
         }

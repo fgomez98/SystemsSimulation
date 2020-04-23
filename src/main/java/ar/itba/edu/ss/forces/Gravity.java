@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class Gravity implements Force {
 
-    private final double G = 6.603E-11;
+    private final double G = 6.693E-20; // par km
 
     private Set<HardParticle> planets;
 
