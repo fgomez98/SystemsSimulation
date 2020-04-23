@@ -5,12 +5,10 @@ import ar.itba.edu.ss.integrators.Beeman;
 import ar.itba.edu.ss.interfaces.Integration;
 import ar.itba.edu.ss.model.HardParticle;
 import ar.itba.edu.ss.utils.IOUtils;
-import javafx.util.Pair;
 
 import java.awt.*;
 import java.io.IOException;
 import java.util.*;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 
@@ -23,6 +21,7 @@ import java.util.List;
 
 public class MissionToMars {
 
+    public static String SIMULATION_FILENAME = "mars-travel.xyz";
     private double EPSILON = 0.00001;
 
     List<HardParticle> bodies;
@@ -45,102 +44,91 @@ public class MissionToMars {
     private double dt;
     private double dt2;
     private final int STATE_K = 4;
-    private int days = 0;
     private double time = 0;
-    private double initialSpeed1 = 8.0;      /* 8 km/hr */
-    private double initialSpeed2 = 13.0;      /* 13 km/hr */
-    private Calendar calendar;
+    private double initialSpeed = 8.0;      /* 8 km/hr */
 
     private static String FUTURE_ARRIVAL = "future-arrival.txt";
     private static String TIME_OF_TRIP = "time-of-trip.txt";
     private static String FINAL_SPEED = "final-speed.txt";
 
-    public MissionToMars(double dt, int spaceshipSpeed) {
+    public MissionToMars(double dt, double spaceshipSpeed) {
         this.dt = dt;
         this.dt2 = dt * STATE_K;
-
-        calendar = new GregorianCalendar(2020, Calendar.APRIL, 4);
-
+        this.initialSpeed = spaceshipSpeed;
         initPlanets();
     }
 
-    // a) El momento en el futuro (fecha y cuantos dias desde 06/04/2020) en el cual la nave debería partir para asegurar el arribo a marte. Para ello graficar distancia mínima a marte en función de la fecha de salida.
+    public void simulate(double simulationTimeTotal, double launchDay) throws IOException {
+        simulate(simulationTimeTotal, launchDay, initialSpeed, true);
+    }
 
-    private void simulateFutureArrival(double simulationTimeTotal) throws IOException {
-        List<Pair<Double, Double>> distances = new ArrayList<>();
-        double days = 140;
-        while (days < 200) { // dias desde 06/04/2020 cuando se efectua el lanzamiento
-            // posicionamos los planetas en sus posiciones iniciales
-            initPlanets();
-            boolean hasLaunched = false;
-            double minDist = Double.MAX_VALUE;
-            double launchTime = days * 86400; // -> a segundos
-            double currentSimulationTime = 0;
-            int frame = 0;
-            IOUtils.ovitoOutputParticles("mars.xyz",
-                    bodies,
-                    frame++,
-                    false);
+    private TravelData simulate(double simulationTimeTotal, double launchDay, double initialVelocity, boolean outputOvito) {
+        initialSpeed = initialVelocity;
+        initPlanets();
+        boolean hasLaunched = false;
+        double minDist = Double.MAX_VALUE;
+        double minTime = 0;
+        double velocityAtMin = 0;
+        double launchTime = launchDay * 86400; // -> a segundos
+        double currentSimulationTime = 0;
+        int frame = 0;
 
-            while (currentSimulationTime <= simulationTimeTotal) { // tiempo total a simular -> en segundos por que la velocidad esta en km/s
-                if (!hasLaunched && (currentSimulationTime >= launchTime)) {
-                    hasLaunched = true;
-                    addSpaceShip();
-                }
-                marsIntegrator.calculate(mars, dt);
-                earthIntegrator.calculate(earth, dt);
-                sunIntegrator.calculate(sun, dt);
-
-                marsNeighbours = new HashSet<>();
-                marsNeighbours.add(earth.copy());
-                marsNeighbours.add(sun.copy());
-
-                earthNeighbours = new HashSet<>();
-                earthNeighbours.add(sun.copy());
-                earthNeighbours.add(mars.copy());
-
-                sunNeighbours = new HashSet<>();
-                sunNeighbours.add(earth.copy());
-                sunNeighbours.add(mars.copy());
-
-                if (hasLaunched) {
-                    spaceshipIntegrator.calculate(spaceship, dt);
-                    double dist = Point.distance(spaceship.getX(), spaceship.getY(), mars.getX(), mars.getY());
-                    if (dist < minDist) {
-                        minDist = dist;
-                    }
-
-                    spaceshipNeighbours = new HashSet<>();
-                    spaceshipNeighbours.add(sun.copy());
-                    spaceshipNeighbours.add(earth.copy());
-                    spaceshipNeighbours.add(mars.copy());
-
-                    sunNeighbours.add(spaceship.copy());
-                    earthNeighbours.add(spaceship.copy());
-                    marsNeighbours.add(spaceship.copy());
-
-                    spaceshipIntegrator = new Beeman(new Gravity(spaceshipNeighbours));
-                }
-
-                marsIntegrator = new Beeman(new Gravity(marsNeighbours));
-                earthIntegrator = new Beeman(new Gravity(earthNeighbours));
-                sunIntegrator = new Beeman(new Gravity(sunNeighbours));
-
-                IOUtils.ovitoOutputParticles("mars.xyz",
-                        bodies,
-                        frame++,
-                        true);
-
-                currentSimulationTime += dt; // paso temporal a considerar en segundos otra vez
-            }
-            distances.add(new Pair(days, minDist));
-            days++;
+        if (outputOvito) {
+            // creamos el archivo
+            IOUtils.ovitoOutputParticles(SIMULATION_FILENAME, bodies, frame++, false);
         }
-        IOUtils.CSVWrite("distances_mars.txt",
-                distances,
-                "Days,Distance\n",
-                p -> p.getKey() + "," + p.getValue() + "\n",
-                false);
+
+        while (currentSimulationTime <= simulationTimeTotal) {
+            if (!hasLaunched && (currentSimulationTime >= launchTime)) {
+                hasLaunched = true;
+                launchTime = currentSimulationTime;
+                addSpaceShip();
+            }
+            movePlanets();
+            if (hasLaunched) {
+                moveSpaceShip();
+                double dist = Point.distance(spaceship.getX(), spaceship.getY(), mars.getX(), mars.getY());
+                if (dist < minDist) {
+                    minDist = dist;
+                    minTime = currentSimulationTime;
+                    velocityAtMin = Math.sqrt(Math.pow(spaceship.getXVelocity(), 2) + Math.pow(spaceship.getYVelocity(), 2));
+                }
+            }
+            if (outputOvito) {
+                // output del estado
+                IOUtils.ovitoOutputParticles(SIMULATION_FILENAME, bodies, frame++, true);
+            }
+            currentSimulationTime += dt;
+        }
+        return new TravelData((minTime - launchTime), launchDay, minDist, velocityAtMin, initialSpeed);
+    }
+
+    private void simulateFutureArrivalV(double simulationTimeTotal, double launchDay, double vStart, double vEnd, double vStep) throws IOException {
+        List<TravelData> distances = new ArrayList<>();
+        vStep = (vStep == -1) ? 10 : vStep;
+        vStart = (vStart == -1) ? initialSpeed : vStart;
+        vEnd = (vEnd == -1) ? 120.0 : vEnd;
+        while (vStart < vEnd) {
+            distances.add(simulate(simulationTimeTotal, launchDay, vStart, false));
+            vStart += vStep;
+        }
+        IOUtils.CSVWrite("distances_velocity_mars.txt", distances, "Initial Velocity,Distance\n", d -> d.velocityInitial + "," + d.dst + "\n", false);
+        TravelData opt = distances.stream().min(Comparator.comparingDouble(TravelData::getDst)).get();
+        System.out.println("Launch on day: " + opt.getDay() + " Distace: " + opt.getDst() + " Travel Time: " + opt.getTravelTime() + " Final Velocity: " + opt.getVelocityFinal() + "Initial Velocity: " + opt.getVelocityInitial());
+    }
+
+    private void simulateFutureArrivalD(double simulationTimeTotal, double dayFrom, double dayTo, double dSetp) throws IOException {
+        List<TravelData> distances = new ArrayList<>();
+        double days = (dayFrom == -1) ? 0 : dayFrom;
+        double daysTotal = (dayTo == -1) ? (simulationTimeTotal / 86400) : dayTo;
+        dSetp = (dSetp == -1) ? 1 : dSetp;
+        while (days < daysTotal) { // dias desde 06/04/2020 cuando se efectua el lanzamiento
+            distances.add(simulate(simulationTimeTotal, days, initialSpeed, false));
+            days += dSetp;
+        }
+        IOUtils.CSVWrite("distances_mars.txt", distances, "Days,Distance\n", d -> d.day + "," + d.dst + "\n", false);
+        TravelData opt = distances.stream().min(Comparator.comparingDouble(TravelData::getDst)).get();
+        System.out.println("Launch on day: " + opt.getDay() + " Distace: " + opt.getDst() + " Travel Time: " + opt.getTravelTime() + " Final Velocity: " + opt.getVelocityFinal() + "Initial Velocity: " + opt.getVelocityInitial());
     }
 
     private void locateSpaceship(HardParticle spaceship, double initialSpeed) {
@@ -167,7 +155,7 @@ public class MissionToMars {
     }
 
     private void addSpaceShip() {
-        locateSpaceship(spaceship, 8.0);
+        locateSpaceship(spaceship, initialSpeed);
         bodies.add(spaceship);
         // re calculamos los vecinos para las fuerzas
         marsNeighbours.add(spaceship.copy());
@@ -180,36 +168,42 @@ public class MissionToMars {
         return distance <= EPSILON;
     }
 
-    private void outputPredictions() throws IOException {
-        List<HardParticle> data = new LinkedList<>();
-        data.add(spaceship);
-        SimpleDateFormat formattedDate = new SimpleDateFormat("dd-MMM-yyyy");
+    private void movePlanets() {
+        marsIntegrator.calculate(mars, dt);
+        earthIntegrator.calculate(earth, dt);
+        sunIntegrator.calculate(sun, dt);
 
-        IOUtils.CSVWrite(FUTURE_ARRIVAL,
-                data,
-                "",
-                particle -> days + ", " + formattedDate.format(calendar.getTime()),
-                false);
+        marsNeighbours = new HashSet<>();
+        marsNeighbours.add(earth.copy());
+        marsNeighbours.add(sun.copy());
+
+        earthNeighbours = new HashSet<>();
+        earthNeighbours.add(sun.copy());
+        earthNeighbours.add(mars.copy());
+
+        sunNeighbours = new HashSet<>();
+        sunNeighbours.add(earth.copy());
+        sunNeighbours.add(mars.copy());
+
+        marsIntegrator = new Beeman(new Gravity(marsNeighbours));
+        earthIntegrator = new Beeman(new Gravity(earthNeighbours));
+        sunIntegrator = new Beeman(new Gravity(sunNeighbours));
     }
 
-    private void updateDays() {
-        int simulationDays = (int) time / 3600;
-        days += simulationDays - days;
-    }
+    private void moveSpaceShip() {
+        spaceshipIntegrator.calculate(spaceship, dt);
 
-    private void restartCalendar() {
-        calendar.set(2020, Calendar.APRIL, 4);
-    }
+        spaceshipNeighbours = new HashSet<>();
+        spaceshipNeighbours.add(sun.copy());
+        spaceshipNeighbours.add(earth.copy());
+        spaceshipNeighbours.add(mars.copy());
 
-//    Set<HardParticle> getNeighbours(HardParticle planet) {
-//        Set<HardParticle> neigh = new HashSet<>();
-//        for (Pair<HardParticle, Integration> p : bodies) {
-//            if (!p.getKey().equals(planet)) {
-//                neigh.add(p.getKey());
-//            }
-//        }
-//        return neigh;
-//    }
+        sunNeighbours.add(spaceship.copy());
+        earthNeighbours.add(spaceship.copy());
+        marsNeighbours.add(spaceship.copy());
+
+        spaceshipIntegrator = new Beeman(new Gravity(spaceshipNeighbours));
+    }
 
     private void initPlanets() {
         /* sacamos las condiciones iniciales del link  https://ssd.jpl.nasa.gov/horizons.cgi#top al día 06/04
@@ -295,49 +289,66 @@ public class MissionToMars {
         bodies.add(earth);
     }
 
-    private void outputCalculations() throws IOException {
-        /* TODO: corregir esto */
-        List<HardParticle> data = new LinkedList<>();
-        data.add(spaceship);
-
-        IOUtils.CSVWrite(TIME_OF_TRIP,
-                data,
-                "",
-                particle -> days + "\n",
-                false);
-
-        IOUtils.CSVWrite(FINAL_SPEED,
-                data,
-                "",
-                particle -> particle.getVelocity() + "\n",
-                false);
-    }
-
-    public void simulate(double simulationTime) throws IOException {
-
-        while (!hasSpaceshipArrived() || simulationTime > time) {
-
-            time += dt;
-            updateDays();
-        }
-
-        outputCalculations();
-
-    }
-
     public static void main(String[] args) {
 
-        MissionToMars mars = new MissionToMars(500, 8); // definir esto // -> a segundos
+        MissionToMars mars = new MissionToMars(360, 8); // definir esto // -> a segundos
 
         System.out.println("Starting simulation...");
         long start = System.currentTimeMillis();
 
         try {
-            mars.simulateFutureArrival((365/2) * 24 * 3600);  // 1 año = 365 dias, 1 dia con 24hrs, 1 hora con 3600
+            mars.simulateFutureArrivalD(2 * 365 * 24 * 3600, -1, -1, 30);  // 1 año = 365 dias, 1 dia con 24hrs, 1 hora con 3600
+//            mars.simulateFutureArrivalV(2 * 365 * 24 * 3600, 113.0, 5, 15, 0.1);  // 1 año = 365 dias, 1 dia con 24hrs, 1 hora con 3600
+//            mars.simulate(2 * 365 * 24 * 3600, 113.0);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         System.out.println("Time elapsed: " + (System.currentTimeMillis() - start));
+    }
+
+    private class TravelData {
+        private double travelTime;
+        private double day;
+        private double dst;
+        private double velocityFinal;
+        private double velocityInitial;
+
+        public TravelData(double travelTime, double day, double dst, double velocityFinal, double velocityInitial) {
+            this.travelTime = travelTime;
+            this.day = day;
+            this.dst = dst;
+            this.velocityFinal = velocityFinal;
+            this.velocityInitial = velocityInitial;
+        }
+
+        @Override
+        public String toString() {
+            return "travelTime=" + travelTime +
+                    ", day=" + day +
+                    ", dst=" + dst +
+                    ", velocity final=" + velocityFinal +
+                    ", velocity initial=" + velocityInitial;
+        }
+
+        public double getTravelTime() {
+            return travelTime;
+        }
+
+        public double getDay() {
+            return day;
+        }
+
+        public double getDst() {
+            return dst;
+        }
+
+        public double getVelocityFinal() {
+            return velocityFinal;
+        }
+
+        public double getVelocityInitial() {
+            return velocityInitial;
+        }
     }
 }

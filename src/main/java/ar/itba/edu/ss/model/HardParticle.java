@@ -183,7 +183,22 @@ public class HardParticle extends MovingParticle {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(Long.toString(getId()));
-        return sb.append(" ").append(dinamicData()).append(" ").append("\n").toString();
+        sb.append(" ").append(dinamicData()).append(" ");
+        switch ((int)getId()) {
+            case 1: // marte
+                sb.append("255 0 0");
+                break;
+            case 2: // earth
+                sb.append("0 0 255");
+                break;
+            case 3: // sun
+                sb.append("255 255 0");
+                break;
+            case 4: // spaceship
+                sb.append("255 228 181");
+                break;
+        }
+        return sb.append("\n").toString();
     }
 
     @Override

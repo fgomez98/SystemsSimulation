@@ -27,20 +27,20 @@ public class SpringOscillator {
         r (t=0) = 1 m;
         v (t=0) = - A 𝛾/(2m) m/s;
      */
-    private final double k = 10000; // constante del resorte
-    private final double gamma = 100; // Kg/s
+    private static final double k = 10000; // constante del resorte
+    private static final double gamma = 100; // Kg/s
     private double dt; // differencial de tiempo
     private double dt2; // differencial de tiempo para guardar el estado
-    private final double mass = 70; // Kgh
-    private final double r = 1; // m
-    private final double amplitud = r; // m
+    private static final double mass = 70; // Kgh
+    private static final double r = 1; // m
+    private static final double amplitud = r; // m
 
     public SpringOscillator(double dt) {
         this.dt = dt;
         this.dt2 = dt * SAVE_STATE_K;
     }
 
-    private HardParticle particle = (HardParticle) new HardParticle.Builder()
+    private static HardParticle particle = (HardParticle) new HardParticle.Builder()
             .withMass(mass)
             .withVelocity(-(amplitud * gamma) / (2 * mass), 0.0)
             .withCoordinates(1, 0).build(); // solo eje x
@@ -55,24 +55,42 @@ public class SpringOscillator {
         double time = 0;
         while (time <= simulationTime) {
 //            if ((time / dt2) - Math.round(time / dt2) == 0) {
-            outputData(time, outFilename);
+            outputData(particle, time, outFilename);
 //            }
             integrationMethod.calculate(particle, dt);
             time += dt;
         }
     }
 
+    private enum Simulations {
+        ANALITICAL(particle.copy(), new AnaliticalSpring(k, gamma, mass, amplitud), SPRING_OSCILLATOR_ANALITICAL_FILENAME),
+        VERLET(particle.copy(), new Verlet(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_VERLET_FILENAME),
+        BEEMA(particle.copy(), new Beeman(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_BEEMAN_FILENAME),
+        GREAR(particle.copy(), new GearOrder5(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_GEAR_FILENAME);
+
+        Simulations(HardParticle particle, Integration integrationMethod, String outFilename) {
+            this.simParticle = particle;
+            this.integrationMethod = integrationMethod;
+            this.outFilename = outFilename;
+        }
+
+        private HardParticle simParticle;
+        private Integration integrationMethod;
+        private String outFilename;
+    }
+
     public void simulateAll(double simulationTime) throws IOException {
-        simulate(simulationTime, new AnaliticalSpring(k, gamma, mass, amplitud), SPRING_OSCILLATOR_ANALITICAL_FILENAME);
-        particle.setVelocity(-(amplitud * gamma) / (2 * mass), 0.0);
-        particle.setCoordinates(1, 0);
-        simulate(simulationTime, new Verlet(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_VERLET_FILENAME);
-        particle.setVelocity(-(amplitud * gamma) / (2 * mass), 0.0);
-        particle.setCoordinates(1, 0);
-        simulate(simulationTime, new Beeman(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_BEEMAN_FILENAME);
-        particle.setVelocity(-(amplitud * gamma) / (2 * mass), 0.0);
-        particle.setCoordinates(1, 0);
-        simulate(simulationTime, new GearOrder5(new SpringOscillatorForce(k, gamma)), SPRING_OSCILLATOR_GEAR_FILENAME);
+        for (Simulations s: Simulations.values()) {
+            createFiles(s.outFilename);
+        }
+        double time = 0;
+        while (time <= simulationTime) {
+            for (Simulations s: Simulations.values()) {
+                outputData(s.simParticle, time, s.outFilename);
+                s.integrationMethod.calculate(s.simParticle, dt);
+            }
+            time += dt;
+        }
     }
 
     private void createFiles(String outFilename) throws IOException {
@@ -83,13 +101,13 @@ public class SpringOscillator {
                 false);
     }
 
-    private void outputData(double time, String outFilename) throws IOException {
+    private void outputData(HardParticle p, double time, String outFilename) throws IOException {
         List<HardParticle> data = new LinkedList<>();
-        data.add(particle);
+        data.add(p);
         IOUtils.CSVWrite(outFilename,
                 data,
                 "",
-                p -> time + ", " + p.getX() + "\n",
+                e -> time + ", " + e.getX() + "\n",
                 true);
     }
 

@@ -3,11 +3,18 @@ import matplotlib.pyplot as plt
 
 attributes = ['Days','Distance']
 
-# lectura archivos
-analitical_frame = pd.read_csv("./distances_mars.txt", delimiter=',', usecols=attributes)
+data_frame = pd.read_csv("./distances_mars.txt", delimiter=',', usecols=attributes)
+data_frame.plot(x='Days', y='Distance', c='DarkBlue', legend=None)
 
-plt.plot(analitical_frame['Days'], analitical_frame['Distance'], label='analitical')
-plt.legend()
-plt.ylabel('Dist (m)')
-plt.xlabel('Tiempo (s)')
+plt.ylabel('Distancia minima a marte (km)')
+plt.xlabel('Tiempo (dias)')
+plt.show()
+
+attributes = ['Initial Velocity','Distance']
+
+data_frame = pd.read_csv("./distances_velocity_mars.txt", delimiter=',', usecols=attributes)
+data_frame.plot(x='Initial Velocity', y='Distance', c='DarkBlue', legend=None)
+
+plt.ylabel('Distancia minima a marte (km)')
+plt.xlabel('Velocidad inicial (km/s)')
 plt.show()
