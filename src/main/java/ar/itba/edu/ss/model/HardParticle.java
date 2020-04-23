@@ -183,7 +183,7 @@ public class HardParticle extends MovingParticle {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(Long.toString(getId()));
-        return sb.append(" ").append(staticData()).append(" ").append(dinamicData()).append(" ").append(getVelocity()).append("\n").toString();
+        return sb.append(" ").append(dinamicData()).append(" ").append("\n").toString();
     }
 
     @Override

@@ -3,6 +3,7 @@ package ar.itba.edu.ss.forces;
 import ar.itba.edu.ss.interfaces.Force;
 import ar.itba.edu.ss.model.HardParticle;
 
+import java.awt.*;
 import java.util.Set;
 
 public class Gravity implements Force {
@@ -28,9 +29,7 @@ public class Gravity implements Force {
     public double getY(HardParticle planet) {
         double totalFy = 0.0;
         for (HardParticle p : planets) {
-            if (!planet.equals(p)) {
-                totalFy += getF(planet, p) * getEY(planet, p);
-            }
+            totalFy += getF(planet, p) * getEY(planet, p);
         }
         return totalFy;
     }
@@ -51,15 +50,19 @@ public class Gravity implements Force {
     }
 
     private double getF(HardParticle planetA, HardParticle planetB) {
-        return (G * planetA.getMass() * planetB.getMass()) / Math.pow(planetA.distanceTo(planetB), 2);
+        return (G * planetA.getMass() * planetB.getMass()) / Math.pow(getDistance(planetA, planetB), 2);
     }
 
     private double getEX(HardParticle planetA, HardParticle planetB) {
-        return (planetB.getX() - planetA.getX()) / planetA.distanceTo(planetB);
+        return (planetB.getX() - planetA.getX()) / getDistance(planetA, planetB);
     }
 
     private double getEY(HardParticle planetA, HardParticle planetB) {
-        return (planetB.getY() - planetA.getY()) / planetA.distanceTo(planetB);
+        return (planetB.getY() - planetA.getY()) / getDistance(planetA, planetB);
+    }
+
+    private double getDistance(HardParticle planetA, HardParticle planetB) {
+        return Point.distance(planetA.getX(), planetA.getY(), planetB.getX(), planetB.getY());
     }
 
 }
