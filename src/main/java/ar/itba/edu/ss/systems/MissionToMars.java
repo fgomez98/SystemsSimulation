@@ -162,8 +162,7 @@ public class MissionToMars {
 
     private void addSpaceShip() {
         locateSpaceship(spaceship, initialSpeed);
-        System.out.println(earth.getX() + " , " + earth.getY() + " , " + earth.getXVelocity() + " , " + earth.getYVelocity());
-        System.out.println(spaceship.getX() + " , " + spaceship.getY() + " , " + spaceship.getXVelocity() + " , " + spaceship.getYVelocity());
+
         bodies.add(spaceship);
         // re calculamos los vecinos para las fuerzas
         marsNeighbours.add(spaceship.copy());
