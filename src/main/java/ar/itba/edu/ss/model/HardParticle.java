@@ -197,6 +197,10 @@ public class HardParticle extends MovingParticle {
             case 4: // spaceship
                 sb.append("255 228 181");
                 break;
+            case 5: // jupiter
+                sb.append("255 0 255");
+            case 6: // venus
+                sb.append("0 255 0");
         }
         return sb.append("\n").toString();
     }

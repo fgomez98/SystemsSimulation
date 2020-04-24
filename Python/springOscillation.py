@@ -46,11 +46,13 @@ for j in range(0, len(dts)):
     # plt.show()
 
 # pasamos a log10
-dts = [math.log10(dt) for dt in dts]
-errors = [[math.log10(error) for error in row] for row in errors]
+# dts = [math.log10(dt) for dt in dts]
+# errors = [[math.log10(error) for error in row] for row in errors]
 for i in range(0, len(errors)):
     plt.plot(dts, errors[i], label=str(names_frames[i]))
 plt.legend()
+plt.yscale('log')
+plt.xscale('log')
 plt.ylabel('log10(ECM)')
 plt.xlabel('log10(dt) [s]')
 plt.savefig('./Python/graphs/oscillator_error.png')
