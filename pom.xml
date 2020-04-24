@@ -70,6 +70,25 @@
                             <goal>single</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>build-b</id>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>ar.itba.edu.ss.MolecularDinamicGravitatory</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <!-- <appendAssemblyId>false</appendAssemblyId> -->
+                            <finalName>MolecularDinamicGravitatory</finalName>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

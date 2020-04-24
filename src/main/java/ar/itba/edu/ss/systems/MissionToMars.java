@@ -132,7 +132,7 @@ public class MissionToMars {
         System.out.println("Launch on day: " + opt.getDay() + " Distace: " + opt.getDst() + " Travel Time: " + opt.getTravelTime() + " Final Velocity: " + opt.getVelocityFinal() + "Initial Velocity: " + opt.getVelocityInitial());
     }
 
-    private void simulateFutureArrivalD(double simulationTimeTotal, double dayFrom, double dayTo, double dSetp) throws IOException {
+    public void simulateFutureArrivalD(double simulationTimeTotal, double dayFrom, double dayTo, double dSetp) throws IOException {
         List<TravelData> distances = new ArrayList<>();
         double days = (dayFrom == -1) ? 0 : dayFrom;
         double daysTotal = (dayTo == -1) ? (simulationTimeTotal / 86400) : dayTo;
