@@ -57,11 +57,11 @@ public class MissionToMars {
     private static String TIME_OF_TRIP = "time-of-trip.txt";
     private static String FINAL_SPEED = "final-speed.txt";
 
-    public MissionToMars(double dt, double spaceshipSpeed) {
+    public MissionToMars(double dt, double spaceshipSpeed, boolean addVenusAndJupiter) {
         this.dt = dt;
         this.dt2 = dt * STATE_K;
         this.initialSpeed = spaceshipSpeed;
-        initPlanets(false);
+        initPlanets(addVenusAndJupiter);
     }
 
     public void simulate(double simulationTimeTotal, double launchDay) throws IOException {
@@ -123,7 +123,7 @@ public class MissionToMars {
         System.out.println("Launch on day: " + opt.getDay() + " Distace: " + opt.getDst() + " Travel Time: " + opt.getTravelTime() + " Final Velocity: " + opt.getVelocityFinal() + "Initial Velocity: " + opt.getVelocityInitial());
     }
 
-    private void simulateFutureArrivalD(double simulationTimeTotal, double dayFrom, double dayTo, double dSetp) throws IOException {
+    public void simulateFutureArrivalD(double simulationTimeTotal, double dayFrom, double dayTo, double dSetp) throws IOException {
         List<TravelData> distances = new ArrayList<>();
         double days = (dayFrom == -1) ? 0 : dayFrom;
         double daysTotal = (dayTo == -1) ? (simulationTimeTotal / 86400) : dayTo;
@@ -160,9 +160,9 @@ public class MissionToMars {
         spaceship.setCoordinates(xCoord, yCoord);
     }
 
+
     private void addSpaceShip() {
         locateSpaceship(spaceship, initialSpeed);
-
         bodies.add(spaceship);
         // re calculamos los vecinos para las fuerzas
         marsNeighbours.add(spaceship.copy());
@@ -358,7 +358,7 @@ public class MissionToMars {
 
     public static void main(String[] args) {
 
-        MissionToMars mars = new MissionToMars(360, 8); // definir esto // -> a segundos
+        MissionToMars mars = new MissionToMars(360, 8, false); // definir esto // -> a segundos
 
         System.out.println("Starting simulation...");
         long start = System.currentTimeMillis();
